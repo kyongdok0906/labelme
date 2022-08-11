@@ -7,7 +7,6 @@ Author: Kentaro Wada
 Author-email: www.kentaro.wada@gmail.com
 License: GPLv3
 Keywords: Image Annotation,Machine Learning
-Platform: UNKNOWN
 Classifier: Development Status :: 5 - Production/Stable
 Classifier: Intended Audience :: Developers
 Classifier: Intended Audience :: Science/Research
@@ -22,8 +21,24 @@ Classifier: Programming Language :: Python :: 3.9
 Classifier: Programming Language :: Python :: 3 :: Only
 Description-Content-Type: text/markdown
 
-# Labelme 가이드
+# Guide Labelme 
+## 1. Setting
+The python must to install on system
 
-## 1. 환경셋팅
+The python can download in <a href="https://www.python.org/downloads/">here</a> .
 
+## 2 For development
+### install pip 
 
+python -m pip install --upgrade pip
+
+or
+
+python -m pip install --upgrade --force-reinstall pip
+
+### install pyinstaller
+pip install pyinstaller
+
+### install all package 
+
+python setup.py install
