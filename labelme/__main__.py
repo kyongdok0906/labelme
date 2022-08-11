@@ -158,9 +158,11 @@ def main():
         else:
             output_dir = output
 
+    local_lang = config["local_lang"] if config["local_lang"] is not None else QtCore.QLocale.system().name()
     translator = QtCore.QTranslator()
     translator.load(
-        QtCore.QLocale.system().name(),  # zh_CN
+        #QtCore.QLocale.system().name(),
+        local_lang,
         osp.dirname(osp.abspath(__file__)) + "/translate",
     )
     app = QtWidgets.QApplication(sys.argv)
