@@ -7,6 +7,7 @@ import os
 import os.path as osp
 import re
 import webbrowser
+#import ctypes
 
 import imgviz
 import natsort
@@ -14,6 +15,7 @@ from qtpy import QtCore
 from qtpy.QtCore import Qt
 from qtpy import QtGui
 from qtpy import QtWidgets
+#from win32api import GetSystemMetrics
 
 from labelme import __appname__
 from labelme import PY2
@@ -791,10 +793,15 @@ class MainWindow(QtWidgets.QMainWindow):
         # Restore application settings.
         self.settings = QtCore.QSettings("labelme", "labelme")
         self.recentFiles = self.settings.value("recentFiles", []) or []
+
         size = self.settings.value("window/size", QtCore.QSize(600, 500))
+        #user32 = ctypes.windll.user32
+        #size = self.settings.value("window/size", QtCore.QSize(user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)))
+
         position = self.settings.value("window/position", QtCore.QPoint(0, 0))
         state = self.settings.value("window/state", QtCore.QByteArray())
         self.resize(size)
+        self.showMaximized()
         self.move(position)
         # or simply:
         # self.restoreGeometry(settings['window/geometry']
