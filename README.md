@@ -20,6 +20,6 @@ pip install pyinstaller
 
 python setup.py install
 
-## 3 How to build standalone executable to using window
+## 3 How to build an independent app that runs in Wondow
 
 pyinstaller labelme.spec
