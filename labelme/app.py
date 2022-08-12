@@ -457,6 +457,25 @@ class MainWindow(QtWidgets.QMainWindow):
             tip=self.tr("Show tutorial page"),
         )
 
+        lang_En = action(
+            self.tr("&English"),
+            self.changelangEn,
+            icon=None,
+            tip=self.tr("Convert to English"),
+        )
+        lang_Ko = action(
+            self.tr("&Korean"),
+            self.changelangKo,
+            icon=None,
+            tip=self.tr("Convert to Korean"),
+        )
+        lang_Zh = action(
+            self.tr("&Chinese"),
+            self.changelangZh,
+            icon=None,
+            tip=self.tr("Convert to Chinese"),
+        )
+
         zoom = QtWidgets.QWidgetAction(self)
         zoom.setDefaultWidget(self.zoomWidget)
         self.zoomWidget.setWhatsThis(
@@ -669,6 +688,7 @@ class MainWindow(QtWidgets.QMainWindow):
             edit=self.menu(self.tr("&Edit")),
             view=self.menu(self.tr("&View")),
             help=self.menu(self.tr("&Help")),
+            lang=self.menu(self.tr("&Language")),
             recentFiles=QtWidgets.QMenu(self.tr("Open &Recent")),
             labelList=labelMenu,
         )
@@ -693,6 +713,14 @@ class MainWindow(QtWidgets.QMainWindow):
             ),
         )
         utils.addActions(self.menus.help, (help,))
+        utils.addActions(
+            self.menus.lang,
+            (
+                lang_En,
+                lang_Ko,
+                lang_Zh,
+             )
+        )
         utils.addActions(
             self.menus.view,
             (
@@ -945,6 +973,18 @@ class MainWindow(QtWidgets.QMainWindow):
     def tutorial(self):
         url = "https://github.com/wkentaro/labelme/tree/main/examples/tutorial"  # NOQA
         webbrowser.open(url)
+
+    def changelangEn(self):
+        print("lang : en")
+        return
+
+    def changelangKo(self):
+        print("lang : ko")
+        return
+
+    def changelangZh(self):
+        print("lang : zh")
+        return
 
     def toggleDrawingSensitive(self, drawing=True):
         """Toggle drawing sensitive.

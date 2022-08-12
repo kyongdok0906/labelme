@@ -1,0 +1,4 @@
+[2022.08.13/04:47:45] - labelme ini is non so created
+[2022.08.13/04:47:45] - en_US
+[2022.08.13/04:49:44] - labelme ini is ok
+[2022.08.13/04:49:44] - ko_KR.qm
