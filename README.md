@@ -24,8 +24,7 @@ python setup.py install
 
 pyinstaller labelme.spec
 
-# Important
-## for multilingual
+# Important for multilingual
 
 ```bash
 put everything in the translate folder in the same path as the executable
