@@ -23,3 +23,9 @@ python setup.py install
 ## 3 How to build an independent app that runs in Wondow
 
 pyinstaller labelme.spec
+
+# Important
+## for multilingual
+
+put everything in the translate folder in the same path as the executable
+
