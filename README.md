@@ -28,4 +28,5 @@ pyinstaller labelme.spec
 
 ```bash
 put everything in the translate folder in the same path as the executable
+ex:: translate/ko_KR.qm, zh_CN.qm
 ```
