@@ -31,3 +31,155 @@
 [2022.08.13/14:30:35] - labelme ini is ok
 [2022.08.13/14:30:35] - zh_CN
 [2022.08.13/14:30:35] - loaded translator
+[2022.08.13/15:11:03] - exist labelme ini
+[2022.08.13/15:11:03] - ko_KR.qm
+[2022.08.13/15:11:03] - loaded translator
+[2022.08.13/17:25:46] - exist labelme ini
+[2022.08.13/17:25:46] - ko_KR.qm
+[2022.08.13/17:25:46] - loaded translator
+[2022.08.13/17:25:49] - non loaded translator
+[2022.08.13/17:25:52] - loaded translator
+[2022.08.13/17:26:28] - loaded translator
+[2022.08.13/17:26:49] - non loaded translator
+[2022.08.13/17:47:36] - exist labelme ini
+[2022.08.13/17:47:36] - ko_KR.qm
+[2022.08.13/17:47:36] - loaded translator
+[2022.08.13/17:48:47] - exist labelme ini
+[2022.08.13/17:48:47] - ko_KR.qm
+[2022.08.13/17:48:47] - loaded translator
+[2022.08.13/17:50:54] - exist labelme ini
+[2022.08.13/17:50:54] - ko_KR.qm
+[2022.08.13/17:50:54] - loaded translator
+[2022.08.13/17:51:25] - loaded translator
+[2022.08.13/18:03:39] - loaded translator
+[2022.08.13/18:05:56] - exist labelme ini
+[2022.08.13/18:05:56] - ko_KR.qm
+[2022.08.13/18:05:56] - loaded translator
+[2022.08.13/18:06:01] - loaded translator
+[2022.08.13/18:06:03] - non loaded translator
+[2022.08.13/20:05:21] - exist labelme ini
+[2022.08.13/20:05:21] - ko_KR.qm
+[2022.08.13/20:05:22] - loaded translator
+[2022.08.13/20:05:45] - exist labelme ini
+[2022.08.13/20:05:45] - ko_KR.qm
+[2022.08.13/20:05:51] - loaded translator
+[2022.08.13/20:07:12] - exist labelme ini
+[2022.08.13/20:07:12] - ko_KR.qm
+[2022.08.13/20:07:18] - loaded translator
+[2022.08.13/20:13:24] - exist labelme ini
+[2022.08.13/20:13:24] - ko_KR.qm
+[2022.08.13/20:13:24] - loaded translator
+[2022.08.13/20:18:02] - exist labelme ini
+[2022.08.13/20:18:02] - ko_KR.qm
+[2022.08.13/20:18:02] - loaded translator
+[2022.08.13/20:18:12] - exist labelme ini
+[2022.08.13/20:18:12] - ko_KR.qm
+[2022.08.13/20:18:12] - loaded translator
+[2022.08.13/20:18:47] - exist labelme ini
+[2022.08.13/20:18:47] - ko_KR.qm
+[2022.08.13/20:18:47] - loaded translator
+[2022.08.13/20:19:35] - exist labelme ini
+[2022.08.13/20:19:35] - ko_KR.qm
+[2022.08.13/20:19:35] - loaded translator
+[2022.08.13/20:20:30] - exist labelme ini
+[2022.08.13/20:20:30] - ko_KR.qm
+[2022.08.13/20:20:30] - loaded translator
+[2022.08.13/20:23:27] - exist labelme ini
+[2022.08.13/20:23:27] - ko_KR.qm
+[2022.08.13/20:23:27] - loaded translator
+[2022.08.13/20:34:24] - exist labelme ini
+[2022.08.13/20:34:24] - ko_KR.qm
+[2022.08.13/20:34:24] - loaded translator
+[2022.08.13/20:36:04] - exist labelme ini
+[2022.08.13/20:36:04] - ko_KR.qm
+[2022.08.13/20:36:04] - loaded translator
+[2022.08.13/20:37:10] - exist labelme ini
+[2022.08.13/20:37:10] - ko_KR.qm
+[2022.08.13/20:37:10] - loaded translator
+[2022.08.13/20:39:22] - exist labelme ini
+[2022.08.13/20:39:22] - ko_KR.qm
+[2022.08.13/20:39:22] - loaded translator
+[2022.08.13/20:40:56] - exist labelme ini
+[2022.08.13/20:40:56] - ko_KR.qm
+[2022.08.13/20:40:56] - loaded translator
+[2022.08.13/20:42:04] - exist labelme ini
+[2022.08.13/20:42:04] - ko_KR.qm
+[2022.08.13/20:42:04] - loaded translator
+[2022.08.13/20:42:59] - exist labelme ini
+[2022.08.13/20:42:59] - ko_KR.qm
+[2022.08.13/20:42:59] - loaded translator
+[2022.08.13/20:45:48] - exist labelme ini
+[2022.08.13/20:45:48] - ko_KR.qm
+[2022.08.13/20:45:48] - loaded translator
+[2022.08.13/20:47:03] - exist labelme ini
+[2022.08.13/20:47:03] - ko_KR.qm
+[2022.08.13/20:47:03] - loaded translator
+[2022.08.13/20:48:02] - exist labelme ini
+[2022.08.13/20:48:02] - ko_KR.qm
+[2022.08.13/20:48:02] - loaded translator
+[2022.08.13/20:48:24] - exist labelme ini
+[2022.08.13/20:48:24] - ko_KR.qm
+[2022.08.13/20:48:24] - loaded translator
+[2022.08.13/20:51:47] - exist labelme ini
+[2022.08.13/20:51:47] - ko_KR.qm
+[2022.08.13/20:51:47] - loaded translator
+[2022.08.13/20:52:54] - exist labelme ini
+[2022.08.13/20:52:54] - ko_KR.qm
+[2022.08.13/20:52:54] - loaded translator
+[2022.08.13/20:54:17] - exist labelme ini
+[2022.08.13/20:54:17] - ko_KR.qm
+[2022.08.13/20:54:17] - loaded translator
+[2022.08.13/20:55:25] - exist labelme ini
+[2022.08.13/20:55:25] - ko_KR.qm
+[2022.08.13/20:55:25] - loaded translator
+[2022.08.13/20:57:16] - exist labelme ini
+[2022.08.13/20:57:16] - ko_KR.qm
+[2022.08.13/20:57:16] - loaded translator
+[2022.08.13/20:58:34] - exist labelme ini
+[2022.08.13/20:58:34] - ko_KR.qm
+[2022.08.13/20:58:34] - loaded translator
+[2022.08.13/21:00:25] - exist labelme ini
+[2022.08.13/21:00:25] - ko_KR.qm
+[2022.08.13/21:00:25] - loaded translator
+[2022.08.13/21:01:23] - exist labelme ini
+[2022.08.13/21:01:23] - ko_KR.qm
+[2022.08.13/21:01:23] - loaded translator
+[2022.08.13/21:01:57] - exist labelme ini
+[2022.08.13/21:01:57] - ko_KR.qm
+[2022.08.13/21:01:57] - loaded translator
+[2022.08.13/21:03:41] - exist labelme ini
+[2022.08.13/21:03:41] - ko_KR.qm
+[2022.08.13/21:03:41] - loaded translator
+[2022.08.13/21:08:29] - exist labelme ini
+[2022.08.13/21:08:29] - ko_KR.qm
+[2022.08.13/21:08:29] - loaded translator
+[2022.08.13/21:08:42] - exist labelme ini
+[2022.08.13/21:08:42] - ko_KR.qm
+[2022.08.13/21:08:42] - loaded translator
+[2022.08.13/21:19:45] - exist labelme ini
+[2022.08.13/21:19:45] - ko_KR.qm
+[2022.08.13/21:19:45] - loaded translator
+[2022.08.13/21:23:09] - exist labelme ini
+[2022.08.13/21:23:09] - ko_KR.qm
+[2022.08.13/21:23:09] - loaded translator
+[2022.08.13/21:24:29] - exist labelme ini
+[2022.08.13/21:24:29] - ko_KR.qm
+[2022.08.13/21:24:29] - loaded translator
+[2022.08.13/21:25:00] - exist labelme ini
+[2022.08.13/21:25:00] - ko_KR.qm
+[2022.08.13/21:25:00] - loaded translator
+[2022.08.13/21:35:17] - exist labelme ini
+[2022.08.13/21:35:17] - ko_KR.qm
+[2022.08.13/21:35:17] - loaded translator
+[2022.08.13/21:36:18] - exist labelme ini
+[2022.08.13/21:36:18] - ko_KR.qm
+[2022.08.13/21:36:18] - loaded translator
+[2022.08.13/21:36:37] - exist labelme ini
+[2022.08.13/21:36:37] - ko_KR.qm
+[2022.08.13/21:36:37] - loaded translator
+[2022.08.13/21:37:24] - exist labelme ini
+[2022.08.13/21:37:24] - ko_KR.qm
+[2022.08.13/21:37:24] - loaded translator
+[2022.08.13/21:38:20] - exist labelme ini
+[2022.08.13/21:38:20] - ko_KR.qm
+[2022.08.13/21:38:20] - loaded translator

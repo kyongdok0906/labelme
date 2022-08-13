@@ -15,7 +15,7 @@ from qtpy import QtCore
 from qtpy.QtCore import Qt
 from qtpy import QtGui
 from qtpy import QtWidgets
-#from win32api import GetSystemMetrics
+# from win32api import GetSystemMetrics
 
 from labelme import __appname__
 from labelme import PY2
@@ -35,6 +35,9 @@ from labelme.widgets import LabelListWidgetItem
 from labelme.widgets import ToolBar
 from labelme.widgets import UniqueLabelQListWidget
 from labelme.widgets import ZoomWidget
+
+from labelme.utils.processini import *
+from labelme.utils.qt import LogPrint
 
 # FIXME
 # - [medium] Set max zoom value to something big enough for FitWidth/Window
@@ -57,7 +60,10 @@ class MainWindow(QtWidgets.QMainWindow):
         output=None,
         output_file=None,
         output_dir=None,
+        trans_obj=None,
+        main_app=None,
     ):
+
         if output is not None:
             logger.warning(
                 "argument output is deprecated, use output_file instead"
@@ -69,6 +75,11 @@ class MainWindow(QtWidgets.QMainWindow):
         if config is None:
             config = get_config()
         self._config = config
+
+        if trans_obj is not None:
+            self._trans_obj = trans_obj
+        if main_app is not None:
+            self._app = main_app
 
         # set default shape colors
         Shape.line_color = QtGui.QColor(*self._config["shape"]["line_color"])
@@ -975,15 +986,45 @@ class MainWindow(QtWidgets.QMainWindow):
         webbrowser.open(url)
 
     def changelangEn(self):
-        print("lang : en")
+        print("lang : en : pre lang is " + self._config["local_lang"])
+        if self._config["local_lang"] != "en_US.qm" or self._config["local_lang"] != "null":
+            self._app.removeTranslator(self._trans_obj)
+            translator = QtCore.QTranslator(self._app)
+            if translator.load(os.getcwd() + "\\translate\\en_US.qm"):
+                self._app.installTranslator(translator)
+                self._config["local_lang"] = "null"
+                LogPrint(str("loaded translator"))
+            else:
+                LogPrint(str("non loaded translator"))
+            self._trans_obj = translator
         return
 
     def changelangKo(self):
-        print("lang : ko")
+        print("lang : en : pre lang is " + self._config["local_lang"])
+        if self._config["local_lang"] != "ko_KR.qm":
+            self._app.removeTranslator(self._trans_obj)
+            translator = QtCore.QTranslator(self._app)
+            if translator.load(os.getcwd() + "\\translate\\ko_KR.qm"):
+                self._app.installTranslator(translator)
+                self._config["local_lang"] = "ko_KR.qm"
+                LogPrint(str("loaded translator"))
+            else:
+                LogPrint(str("non loaded translator"))
+            self._trans_obj = translator
         return
 
     def changelangZh(self):
-        print("lang : zh")
+        print("lang : en : pre lang is " + self._config["local_lang"])
+        if self._config["local_lang"] != "zh_CN.qm":
+            self._app.removeTranslator(self._trans_obj)
+            translator = QtCore.QTranslator(self._app)
+            if translator.load(os.getcwd() + "\\translate\\zh_CN.qm"):
+                self._app.installTranslator(translator)
+                self._config["local_lang"] = "zh_CN.qm"
+                LogPrint(str("loaded translator"))
+            else:
+                LogPrint(str("non loaded translator"))
+            self._trans_obj = translator
         return
 
     def toggleDrawingSensitive(self, drawing=True):

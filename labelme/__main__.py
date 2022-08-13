@@ -11,7 +11,8 @@ from labelme.config import get_config
 from labelme.logger import logger
 from labelme.utils import newIcon
 from labelme.utils.processini import *
-from labelme.utils.function import *
+from labelme.utils.qt import LogPrint
+from labelme.utils.loginDlg import LoginDLG
 
 
 def main():
@@ -164,10 +165,10 @@ def main():
     iniCls = ProcessINI(labele_ini, "sec_lang", "local_lang")
     if iniCls.hasINIFile() is True:
         iniCls.loadSectionKeys()
-        LogPrint(str("labelme ini is ok"))
+        LogPrint(str("exist labelme ini"))
     else:
         iniCls.createConfigFile()
-        LogPrint(str("labelme ini is non so created"))
+        LogPrint(str("labelme ini created"))
 
     lang = iniCls.getValue()
     if lang and lang != 'null':
@@ -179,8 +180,7 @@ def main():
     app.setApplicationName(__appname__)
     app.setWindowIcon(newIcon("icon"))
 
-    translator = QtCore.QTranslator()
-    # LogPrint(str("loaded in " + os.getcwd() + "\\translate\\ko_KR.qm"))
+    translator = QtCore.QTranslator(app)
     if translator.load(os.getcwd() + "\\translate\\" + local_lang):
         app.installTranslator(translator)
         LogPrint(str("loaded translator"))
@@ -188,20 +188,24 @@ def main():
         LogPrint(str("non loaded translator"))
 
     config["local_lang"] = local_lang
-    win = MainWindow(
-        config=config,
-        filename=filename,
-        output_file=output_file,
-        output_dir=output_dir,
-    )
-
-    if reset_config:
-        logger.info("Resetting Qt config: %s" % win.settings.fileName())
-        win.settings.clear()
-        sys.exit(0)
-
-    win.show()
-    win.raise_()
+    """
+        win = MainWindow(
+            config=config,
+            filename=filename,
+            output_file=output_file,
+            output_dir=output_dir,
+            trans_obj=translator,
+            main_app=app,
+        )
+       
+        if reset_config:
+            logger.info("Resetting Qt config: %s" % win.settings.fileName())
+            win.settings.clear()
+            sys.exit(0)
+    """
+    log_win = LoginDLG()
+    log_win.show()
+    log_win.raise_()
     sys.exit(app.exec_())
 
 

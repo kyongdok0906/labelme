@@ -1,6 +1,6 @@
 from math import sqrt
 import os.path as osp
-
+import time
 import numpy as np
 
 from qtpy import QtCore
@@ -98,3 +98,10 @@ def distancetoline(point, line):
 def fmtShortcut(text):
     mod, key = text.split("+", 1)
     return "<b>%s</b>+<b>%s</b>" % (mod, key)
+
+
+def LogPrint(error: str):
+    current_time = time.strftime("%Y.%m.%d/%H:%M:%S", time.localtime(time.time()))
+    with open("Log.txt", "a") as f:
+        f.write(f"[{current_time}] - {error}\n")
+        f.close()
