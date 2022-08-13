@@ -3,24 +3,15 @@ import codecs
 import logging
 import os.path as osp
 import sys
-import time
-
 import yaml
 from qtpy import QtCore, QtWidgets
-
 from labelme import __appname__, __version__
 from labelme.app import MainWindow
 from labelme.config import get_config
 from labelme.logger import logger
 from labelme.utils import newIcon
 from labelme.utils.processini import *
-
-
-def ErrorLog(error: str):
-    current_time = time.strftime("%Y.%m.%d/%H:%M:%S", time.localtime(time.time()))
-    with open("Log.txt", "a") as f:
-        f.write(f"[{current_time}] - {error}\n")
-        f.close()
+from labelme.utils.function import *
 
 
 def main():
@@ -173,27 +164,29 @@ def main():
     iniCls = ProcessINI(labele_ini, "sec_lang", "local_lang")
     if iniCls.hasINIFile() is True:
         iniCls.loadSectionKeys()
-        ErrorLog(str("labelme ini is ok"))
+        LogPrint(str("labelme ini is ok"))
     else:
         iniCls.createConfigFile()
-        ErrorLog(str("labelme ini is non so created"))
+        LogPrint(str("labelme ini is non so created"))
 
     lang = iniCls.getValue()
     if lang and lang != 'null':
         local_lang = lang
     # end get lang of UI
-    ErrorLog(str(local_lang))
+    LogPrint(str(local_lang))
 
     app = QtWidgets.QApplication(sys.argv)
     app.setApplicationName(__appname__)
     app.setWindowIcon(newIcon("icon"))
 
-    translator = QtCore.QTranslator(app)
-    translator.load(
-        local_lang,
-        osp.dirname(osp.abspath(__file__)) + "/translate",
-    )
-    app.installTranslator(translator)
+    translator = QtCore.QTranslator()
+    # LogPrint(str("loaded in " + os.getcwd() + "\\translate\\ko_KR.qm"))
+    if translator.load(os.getcwd() + "\\translate\\" + local_lang):
+        app.installTranslator(translator)
+        LogPrint(str("loaded translator"))
+    else:
+        LogPrint(str("non loaded translator"))
+
     config["local_lang"] = local_lang
     win = MainWindow(
         config=config,

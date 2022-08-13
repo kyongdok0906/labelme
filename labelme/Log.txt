@@ -2,3 +2,32 @@
 [2022.08.13/04:47:45] - en_US
 [2022.08.13/04:49:44] - labelme ini is ok
 [2022.08.13/04:49:44] - ko_KR.qm
+[2022.08.13/12:51:38] - labelme ini is ok
+[2022.08.13/12:51:38] - ko_KR.qm
+[2022.08.13/12:51:38] - loaded translator
+[2022.08.13/12:52:18] - labelme ini is ok
+[2022.08.13/12:52:18] - ko_KR.qm
+[2022.08.13/12:52:38] - loaded translator
+[2022.08.13/12:53:18] - labelme ini is ok
+[2022.08.13/12:53:18] - ko_KR.qm
+[2022.08.13/12:53:31] - loaded translator
+[2022.08.13/12:57:41] - labelme ini is ok
+[2022.08.13/12:57:41] - ko_KR.qm
+[2022.08.13/12:57:48] - loaded translator
+[2022.08.13/14:02:28] - labelme ini is ok
+[2022.08.13/14:02:42] - ko_KR.qm
+[2022.08.13/14:07:08] - labelme ini is ok
+[2022.08.13/14:07:08] - ko_KR.qm
+[2022.08.13/14:07:37] - loaded translator
+[2022.08.13/14:08:45] - labelme ini is ok
+[2022.08.13/14:08:45] - ko_KR
+[2022.08.13/14:08:57] - loaded translator
+[2022.08.13/14:09:46] - labelme ini is ok
+[2022.08.13/14:09:46] - zh_CN
+[2022.08.13/14:09:46] - loaded translator
+[2022.08.13/14:23:39] - labelme ini is ok
+[2022.08.13/14:23:39] - zh_CN
+[2022.08.13/14:23:39] - loaded translator
+[2022.08.13/14:30:35] - labelme ini is ok
+[2022.08.13/14:30:35] - zh_CN
+[2022.08.13/14:30:35] - loaded translator

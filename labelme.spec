@@ -13,7 +13,7 @@ a = Analysis(
     binaries=[],
     datas=[
         ('labelme/config/default_config.yaml', 'labelme/config'),
-        ('labelme/icons/*', 'labelme/icons'),
+        ('labelme/icons/*', 'labelme/icons')
     ],
     hiddenimports=[],
     hookspath=[],
