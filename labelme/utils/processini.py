@@ -2,7 +2,7 @@ import os
 import configparser
 
 
-class ProcessINI:
+class ProcessINI(object):
 
     SECTION = 'DEFAULT'
     configFileName = None

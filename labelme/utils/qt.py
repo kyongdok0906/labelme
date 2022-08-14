@@ -77,7 +77,7 @@ def labelValidator():
     return QtGui.QRegExpValidator(QtCore.QRegExp(r"^[^ \t].+"), None)
 
 
-class struct(object):
+class 	struct(object):
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 

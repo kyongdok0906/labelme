@@ -61,6 +61,8 @@ labelme/icons/zoom.png
 labelme/utils/__init__.py
 labelme/utils/_io.py
 labelme/utils/image.py
+labelme/utils/loginDlg.py
+labelme/utils/processini.py
 labelme/utils/qt.py
 labelme/utils/shape.py
 labelme/widgets/__init__.py

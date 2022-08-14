@@ -3,37 +3,22 @@ import threading
 import time
 
 import requests, json
-from PyQt5.QtWidgets import QDesktopWidget
+from PyQt5.QtWidgets import QDesktopWidget, QWidget
 from qtpy import QtWidgets, QtCore
 from labelme.utils.qt import LogPrint
 from labelme.app import MainWindow
 from labelme.utils.processini import *
 
 
-class LoginDLG(QtWidgets.QWidget):
+class LoginDLG(QWidget):
 
     def __init__(
             self,
-            config=None,
-            filename=None,
-            output=None,
-            output_file=None,
-            output_dir=None,
-            trans_obj=None,
-            main_app=None,
+            config=None
     ):
         super().__init__()
-
         self._config = config
-        self._filename = filename
-        self._output = output
-        self._output_file = output_file
-        self._output_dir = output_dir
-        self._trans_obj = trans_obj
-        self._main_app = main_app
-
         self.initUI()
-        self.show()
 
     def initUI(self):
         grid = QtWidgets.QGridLayout()
@@ -61,7 +46,7 @@ class LoginDLG(QtWidgets.QWidget):
         cb = QtWidgets.QComboBox()
         cb.addItem('English', 'null')
         cb.addItem('Korean', 'ko_KR')
-        cb.addItem('Chinese', 'zh_CN')
+        # cb.addItem('Chinese', 'zh_CN')
         cb.setFixedWidth(100)
         # cb.activated[str].connect(self.onActivated)
         self._cb = cb
@@ -98,13 +83,14 @@ class LoginDLG(QtWidgets.QWidget):
 
     # noinspection PyUnresolvedReferences
     def loginAction(self):
-        print("uname is " + self._lb_id_edit.text().strip())
-        print("pwd is " + self._lb_pwd_edit.text().strip())
-        print("cb  is " + self._cb.currentText() + " :: " + str(self._cb.currentData()))
+        # print("uname is " + self._lb_id_edit.text().strip())
+        # print("pwd is " + self._lb_pwd_edit.text().strip())
+        # print("cb  is " + self._cb.currentText() + " :: " + str(self._cb.currentData()))
 
         uid = self._lb_id_edit.text().strip()
         pwd = self._lb_pwd_edit.text().strip()
         lang = str(self._cb.currentData())
+        self._config["local_lang"] = lang
 
         if not uid:
             self._lb_alram.setText("The ID should not be empty")
@@ -133,37 +119,12 @@ class LoginDLG(QtWidgets.QWidget):
             if self._config is not None:
                 self._config["role_id"] = jsstr['role_id']
             self._lb_alram.setText("Sucess Log in")
-            threading.Timer(1, self.showErrorText).start()
-            self.close()
-
-            self._config["local_lang"] = lang
-            self._trans_obj = QtCore.QTranslator(self._main_app)
-
-            if self._trans_obj.load(os.getcwd() + "\\translate\\" + self._config["local_lang"]):
-                self._main_app.installTranslator(self._trans_obj)
-                LogPrint(str("loaded translator"))
-            else:
-                LogPrint(str("no loaded translator"))
 
             labele_ini = os.getcwd() + '/labelme.ini'
             iniCls = ProcessINI(labele_ini, "sec_lang", "local_lang")
             iniCls.setValue(self._config["local_lang"])
-
-            try:
-                win = MainWindow(
-                    config=self._config,
-                    filename=self._filename,
-                    output=self._output,
-                    output_file=self._output_file,
-                    output_dir=self._output_dir
-                )
-                if self._config["reset_config"]:
-                    logger.info("Resetting Qt config: %s" % win.settings.fileName())
-                    win.settings.clear()
-                    sys.exit(0)
-                win.raise_()
-            except Exception as e:
-                LogPrint('error: ' + e)
+            self._config["login_state"] = True
+            self.close()
 
     def showErrorText(self):
         self._lb_alram.setText("")

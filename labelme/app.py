@@ -36,7 +36,7 @@ from labelme.widgets import ToolBar
 from labelme.widgets import UniqueLabelQListWidget
 from labelme.widgets import ZoomWidget
 
-from labelme.utils.processini import *
+from labelme.utils import ProcessINI
 from labelme.utils.qt import LogPrint
 
 # FIXME
@@ -59,7 +59,7 @@ class MainWindow(QtWidgets.QMainWindow):
         filename=None,
         output=None,
         output_file=None,
-        output_dir=None
+        output_dir=None,
     ):
 
         if output is not None:
@@ -830,8 +830,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.recentFiles = self.settings.value("recentFiles", []) or []
 
         size = self.settings.value("window/size", QtCore.QSize(600, 500))
-        #user32 = ctypes.windll.user32
-        #size = self.settings.value("window/size", QtCore.QSize(user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)))
+        # user32 = ctypes.windll.user32
+        # size = self.settings.value("window/size", QtCore.QSize(user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)))
 
         position = self.settings.value("window/position", QtCore.QPoint(0, 0))
         state = self.settings.value("window/state", QtCore.QByteArray())
@@ -853,8 +853,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.zoomWidget.valueChanged.connect(self.paintCanvas)
 
         self.populateModeActions()
-
-        self.show()
 
         # self.firstStart = True
         # if self.firstStart:
@@ -1545,6 +1543,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def loadFile(self, filename=None):
         """Load the specified file, or the last opened file if None."""
         # changing fileListWidget loads file
+
         if filename in self.imageList and (
             self.fileListWidget.currentRow() != self.imageList.index(filename)
         ):
@@ -1585,6 +1584,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     )
                     % (e, label_file),
                 )
+                # LogPrint("e : %s" % e)
                 self.status(self.tr("Error reading %s") % label_file)
                 return False
             self.imageData = self.labelFile.imageData
