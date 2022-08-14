@@ -101,6 +101,7 @@ class MainWindow(QtWidgets.QMainWindow):
         Shape.point_size = self._config["shape"]["point_size"]
 
         super(MainWindow, self).__init__()
+
         self.setWindowTitle(__appname__)
 
         # Whether we need to save or not.
@@ -467,7 +468,7 @@ class MainWindow(QtWidgets.QMainWindow):
             icon="help",
             tip=self.tr("Show tutorial page"),
         )
-
+        """
         lang_En = action(
             self.tr("&English"),
             self.changelangEn,
@@ -486,7 +487,7 @@ class MainWindow(QtWidgets.QMainWindow):
             icon=None,
             tip=self.tr("Convert to Chinese"),
         )
-
+        """
         zoom = QtWidgets.QWidgetAction(self)
         zoom.setDefaultWidget(self.zoomWidget)
         self.zoomWidget.setWhatsThis(
@@ -699,7 +700,7 @@ class MainWindow(QtWidgets.QMainWindow):
             edit=self.menu(self.tr("&Edit")),
             view=self.menu(self.tr("&View")),
             help=self.menu(self.tr("&Help")),
-            lang=self.menu(self.tr("&Language")),
+            # lang=self.menu(self.tr("&Language")),
             recentFiles=QtWidgets.QMenu(self.tr("Open &Recent")),
             labelList=labelMenu,
         )
@@ -724,6 +725,7 @@ class MainWindow(QtWidgets.QMainWindow):
             ),
         )
         utils.addActions(self.menus.help, (help,))
+        """
         utils.addActions(
             self.menus.lang,
             (
@@ -732,6 +734,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 lang_Zh,
              )
         )
+        """
         utils.addActions(
             self.menus.view,
             (
@@ -857,6 +860,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.zoomWidget.valueChanged.connect(self.paintCanvas)
 
         self.populateModeActions()
+
+        self.show()
 
         # self.firstStart = True
         # if self.firstStart:

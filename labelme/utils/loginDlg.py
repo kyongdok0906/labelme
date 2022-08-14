@@ -1,61 +1,164 @@
 import sys
+import threading
+import time
 
+import requests, json
+from PyQt5.QtWidgets import QDesktopWidget
 from qtpy import QtWidgets, QtCore
+from labelme.utils.qt import LogPrint
+from labelme.app import MainWindow
+from labelme.utils.processini import *
 
 
 class LoginDLG(QtWidgets.QWidget):
 
-    def __init__(self):
-        # self.mainwin = appOBJ
+    def __init__(
+            self,
+            config=None,
+            filename=None,
+            output=None,
+            output_file=None,
+            output_dir=None,
+            trans_obj=None,
+            main_app=None,
+    ):
         super().__init__()
+
+        self._config = config
+        self._filename = filename
+        self._output = output
+        self._output_file = output_file
+        self._output_dir = output_dir
+        self._trans_obj = trans_obj
+        self._main_app = main_app
+
         self.initUI()
+        self.show()
 
     def initUI(self):
-       # self.mainwin.hide()
-       # self.mainwin.raise_()
         grid = QtWidgets.QGridLayout()
         grid.setContentsMargins(20, 20, 20, 10)
         grid.setVerticalSpacing(10)
         self.setLayout(grid)
 
-        lb_uname = QtWidgets.QLabel('UserName *')
-        grid.addWidget(lb_uname, 0, 0, QtCore.Qt.AlignLeft)
-        lb_uname_edit = QtWidgets.QLineEdit()
-        lb_uname_edit.setFixedWidth(150)
-        grid.addWidget(lb_uname_edit, 0, 1, QtCore.Qt.AlignLeft)
+        lb_id = QtWidgets.QLabel('ID *')
+        grid.addWidget(lb_id, 0, 0, QtCore.Qt.AlignLeft)
+        lb_id_edit = QtWidgets.QLineEdit()
+        lb_id_edit.setFixedWidth(150)
+        self._lb_id_edit=lb_id_edit
+        grid.addWidget(lb_id_edit, 0, 1, QtCore.Qt.AlignLeft)
 
-        lb_pwd = QtWidgets.QLabel('Password *')
+        lb_pwd = QtWidgets.QLabel('PWD *')
         grid.addWidget(lb_pwd, 1, 0, QtCore.Qt.AlignLeft)
         lb_pwd_edit = QtWidgets.QLineEdit()
         lb_pwd_edit.setFixedWidth(150)
+        self._lb_pwd_edit = lb_pwd_edit
         grid.addWidget(lb_pwd_edit, 1, 1, QtCore.Qt.AlignLeft)
 
         lb_lang = QtWidgets.QLabel('Language ')
         grid.addWidget(lb_lang, 2, 0, QtCore.Qt.AlignLeft)
 
         cb = QtWidgets.QComboBox()
-        cb.addItem('English')
-        cb.addItem('Korean')
-        cb.addItem('Chinese')
+        cb.addItem('English', 'null')
+        cb.addItem('Korean', 'ko_KR')
+        cb.addItem('Chinese', 'zh_CN')
         cb.setFixedWidth(100)
         # cb.activated[str].connect(self.onActivated)
+        self._cb = cb
         grid.addWidget(cb, 2, 1, QtCore.Qt.AlignLeft)
+        cbidx = 0
+        for i in range(0, self._cb.count()):
+            itxt = self._cb.itemData(i)
+            if itxt == self._config["local_lang"]:
+                cbidx = i
+                break
+
+        self._cb.setCurrentIndex(cbidx)
+        # self.cmb_second.addItem(self.cmb_Test.itemText(i))
 
         btn_login = QtWidgets.QPushButton('Login')
         btn_login.setFixedWidth(100)
         btn_login.clicked.connect(self.loginAction)
         grid.addWidget(btn_login, 3, 1, QtCore.Qt.AlignLeft)
 
-        lb_alram = QtWidgets.QLabel('...')
+        lb_alram = QtWidgets.QLabel('')
         lb_alram.setFixedWidth(200)
+        lb_alram.setStyleSheet("QLabel { color : red; }")
+        self._lb_alram = lb_alram
         grid.addWidget(lb_alram, 4, 1, QtCore.Qt.AlignLeft)
 
         self.setWindowTitle('Login Form')
-        self.setGeometry(300, 300, 200, 150)
-        # position = QtCore.QPoint(0, 0)
-        # self.move(position)
+        # self.setGeometry(300, 300, 200, 150)
+        self.resize(200, 150)
 
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+
+    # noinspection PyUnresolvedReferences
     def loginAction(self):
-        print("click login btn")
-        return
+        print("uname is " + self._lb_id_edit.text().strip())
+        print("pwd is " + self._lb_pwd_edit.text().strip())
+        print("cb  is " + self._cb.currentText() + " :: " + str(self._cb.currentData()))
 
+        uid = self._lb_id_edit.text().strip()
+        pwd = self._lb_pwd_edit.text().strip()
+        lang = str(self._cb.currentData())
+
+        if not uid:
+            self._lb_alram.setText("The ID should not be empty")
+            threading.Timer(2, self.showErrorText).start()
+            self._lb_id_edit.setFocus()
+            return
+
+        if not pwd:
+            self._lb_alram.setText("The PWD should not be empty")
+            threading.Timer(2, self.showErrorText).start()
+            self._lb_pwd_edit.setFocus()
+            return
+
+        url = 'https://gb9fb258fe17506-apexdb.adb.ap-seoul-1.oraclecloudapps.com/ords/lm/v1/labelme/login'
+        headers = {'Authorization': 'Bearer AC58C3FEC1C7FF29C5EA4A881069E47867CE9368'}
+        data = {'user_id': uid, 'password': pwd}
+        respone = requests.post(url, headers=headers, json=data)
+        jsstr = respone.json()
+        # print(json.dumps(jsstr))
+        if jsstr['message'] != 'success':
+            # LogPrint(str("로그인을 위한 서버호출 에러").encode('utf-8'))
+            self._lb_alram.setText("Invalid ID or PWD")
+            threading.Timer(2, self.showErrorText).start()
+        else:
+            print(self._config["local_lang"])
+            if self._config is not None:
+                self._config["role_id"] = jsstr['role_id']
+            self._lb_alram.setText("Sucess Log in")
+            threading.Timer(1, self.showErrorText).start()
+            self.close()
+
+            self._config["local_lang"] = lang
+            self._trans_obj = QtCore.QTranslator(self._main_app)
+
+            if self._trans_obj.load(os.getcwd() + "\\translate\\" + self._config["local_lang"]):
+                self._main_app.installTranslator(self._trans_obj)
+                LogPrint(str("loaded translator"))
+            else:
+                LogPrint(str("no loaded translator"))
+
+            labele_ini = os.getcwd() + '/labelme.ini'
+            iniCls = ProcessINI(labele_ini, "sec_lang", "local_lang")
+            iniCls.setValue(self._config["local_lang"])
+
+            win = MainWindow(
+                config=self._config,
+                filename=self._filename,
+                output=self._output,
+                output_file=self._output_file,
+                output_dir=self._output_dir,
+                trans_obj=self._trans_obj,
+                main_app=self._main_app,
+            )
+            win.raise_()
+
+    def showErrorText(self):
+        self._lb_alram.setText("")

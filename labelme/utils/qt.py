@@ -11,6 +11,11 @@ from qtpy import QtWidgets
 here = osp.dirname(osp.abspath(__file__))
 
 
+def newLang(lang:str):
+    trans_dir = osp.join(here, "../translate")
+    return QtGui.QIcon(osp.join(":/", trans_dir, "%s.qm" % lang))
+
+
 def newIcon(icon):
     icons_dir = osp.join(here, "../icons")
     return QtGui.QIcon(osp.join(":/", icons_dir, "%s.png" % icon))
@@ -105,3 +110,13 @@ def LogPrint(error: str):
     with open("Log.txt", "a") as f:
         f.write(f"[{current_time}] - {error}\n")
         f.close()
+
+
+def httpReq():
+    """
+        url = 'https://gb9fb258fe17506-apexdb.adb.ap-seoul-1.oraclecloudapps.com/ords/lm/v1/labelme/login'
+        headers = {'Authorization': 'Bearer AC58C3FEC1C7FF29C5EA4A881069E47867CE9368'}
+        data = {'user_id': uname, 'password': pwd}
+        respone = requests.post(url, headers=headers, json=data)
+        jsstr = respone.json()
+    """

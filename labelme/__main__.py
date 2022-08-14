@@ -172,43 +172,31 @@ def main():
 
     lang = iniCls.getValue()
     if lang and lang != 'null':
-        local_lang = lang
+        local_lang = str(lang).replace('.qm', '')
     # end get lang of UI
-    LogPrint(str(local_lang))
+    LogPrint(str("current lang is " + local_lang))
 
     app = QtWidgets.QApplication(sys.argv)
     app.setApplicationName(__appname__)
     app.setWindowIcon(newIcon("icon"))
 
-    translator = QtCore.QTranslator(app)
-    if translator.load(os.getcwd() + "\\translate\\" + local_lang):
-        app.installTranslator(translator)
-        LogPrint(str("loaded translator"))
-    else:
-        LogPrint(str("non loaded translator"))
-
     config["local_lang"] = local_lang
-    """
-        win = MainWindow(
-            config=config,
-            filename=filename,
-            output_file=output_file,
-            output_dir=output_dir,
-            trans_obj=translator,
-            main_app=app,
-        )
-       
-        if reset_config:
-            logger.info("Resetting Qt config: %s" % win.settings.fileName())
-            win.settings.clear()
-            sys.exit(0)
-    """
-    log_win = LoginDLG()
-    log_win.show()
-    log_win.raise_()
+    config["reset_config"] = reset_config
+
+    log_win = LoginDLG(
+        config=config,
+        filename=filename,
+        output=output,
+        output_file=output_file,
+        output_dir=output_dir,
+        trans_obj=None,
+        main_app=app,
+    )
+
     sys.exit(app.exec_())
-
-
 # this main block is required to generate executable by pyinstaller
+
+
 if __name__ == "__main__":
     main()
+

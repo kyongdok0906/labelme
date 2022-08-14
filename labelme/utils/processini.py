@@ -36,6 +36,15 @@ class ProcessINI:
     def setKey(self, pkey):
         self.key = pkey
 
+    def setValue(self, keyVal=None):
+        if self.isExist is False:
+            return
+        if keyVal is None:
+            return
+        self.configDef[self.key] = keyVal
+        self.saveConfig()
+        return True
+
     def getValue(self):
         if self.isExist is False:
             return
@@ -126,6 +135,8 @@ class ProcessINI:
         if not self.configFileName:
             return
         lbFile = configparser.ConfigParser()
+        lbFile.read(self.configFileName)
+
         for key in self.configDef:
             val = None
             if type(self.configDef[key]) == int:
