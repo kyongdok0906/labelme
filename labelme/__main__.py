@@ -1,12 +1,12 @@
 import argparse
 import codecs
 import logging
-import os.path as osp
+# import os.path as osp
 import sys
 import yaml
 from qtpy import QtCore, QtWidgets
 from labelme import __appname__, __version__
-from labelme.app import MainWindow
+# from labelme.app import MainWindow
 from labelme.config import get_config
 from labelme.logger import logger
 from labelme.utils import newIcon
@@ -183,7 +183,7 @@ def main():
     config["local_lang"] = local_lang
     config["reset_config"] = reset_config
 
-    log_win = LoginDLG(
+    _win = LoginDLG(
         config=config,
         filename=filename,
         output=output,

@@ -59,9 +59,7 @@ class MainWindow(QtWidgets.QMainWindow):
         filename=None,
         output=None,
         output_file=None,
-        output_dir=None,
-        trans_obj=None,
-        main_app=None,
+        output_dir=None
     ):
 
         if output is not None:
@@ -75,11 +73,6 @@ class MainWindow(QtWidgets.QMainWindow):
         if config is None:
             config = get_config()
         self._config = config
-
-        if trans_obj is not None:
-            self._trans_obj = trans_obj
-        if main_app is not None:
-            self._app = main_app
 
         # set default shape colors
         Shape.line_color = QtGui.QColor(*self._config["shape"]["line_color"])

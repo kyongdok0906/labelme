@@ -125,11 +125,11 @@ class LoginDLG(QtWidgets.QWidget):
         jsstr = respone.json()
         # print(json.dumps(jsstr))
         if jsstr['message'] != 'success':
-            # LogPrint(str("로그인을 위한 서버호출 에러").encode('utf-8'))
+            # LogPrint(str("for login call server error").encode('utf-8'))
             self._lb_alram.setText("Invalid ID or PWD")
             threading.Timer(2, self.showErrorText).start()
         else:
-            print(self._config["local_lang"])
+            # print(self._config["local_lang"])
             if self._config is not None:
                 self._config["role_id"] = jsstr['role_id']
             self._lb_alram.setText("Sucess Log in")
@@ -149,16 +149,21 @@ class LoginDLG(QtWidgets.QWidget):
             iniCls = ProcessINI(labele_ini, "sec_lang", "local_lang")
             iniCls.setValue(self._config["local_lang"])
 
-            win = MainWindow(
-                config=self._config,
-                filename=self._filename,
-                output=self._output,
-                output_file=self._output_file,
-                output_dir=self._output_dir,
-                trans_obj=self._trans_obj,
-                main_app=self._main_app,
-            )
-            win.raise_()
+            try:
+                win = MainWindow(
+                    config=self._config,
+                    filename=self._filename,
+                    output=self._output,
+                    output_file=self._output_file,
+                    output_dir=self._output_dir
+                )
+                if self._config["reset_config"]:
+                    logger.info("Resetting Qt config: %s" % win.settings.fileName())
+                    win.settings.clear()
+                    sys.exit(0)
+                win.raise_()
+            except Exception as e:
+                LogPrint('error: ' + e)
 
     def showErrorText(self):
         self._lb_alram.setText("")
