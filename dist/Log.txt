@@ -3,3 +3,5 @@
 [2022.08.15/04:48:44] - exist labelme ini
 [2022.08.15/04:49:07] - exist labelme ini
 [2022.08.15/04:49:22] - log lang is null
+[2022.08.15/04:57:30] - exist labelme ini
+[2022.08.15/04:57:43] - log lang is ko_KR
