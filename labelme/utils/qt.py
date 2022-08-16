@@ -11,9 +11,9 @@ from qtpy import QtWidgets
 here = osp.dirname(osp.abspath(__file__))
 
 
-def newLang(lang:str):
+def newLang(lang: str):
     trans_dir = osp.join(here, "../translate")
-    return QtGui.QIcon(osp.join(":/", trans_dir, "%s.qm" % lang))
+    return osp.join(":/", trans_dir, "%s.qm" % lang)
 
 
 def newIcon(icon):
@@ -77,7 +77,7 @@ def labelValidator():
     return QtGui.QRegExpValidator(QtCore.QRegExp(r"^[^ \t].+"), None)
 
 
-class 	struct(object):
+class struct(object):
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 

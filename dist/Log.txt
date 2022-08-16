@@ -1,7 +1,4 @@
-[2022.08.15/04:47:35] - exist labelme ini
-[2022.08.15/04:47:47] - log lang is ko_KR
-[2022.08.15/04:48:44] - exist labelme ini
-[2022.08.15/04:49:07] - exist labelme ini
-[2022.08.15/04:49:22] - log lang is null
-[2022.08.15/04:57:30] - exist labelme ini
-[2022.08.15/04:57:43] - log lang is ko_KR
+[2022.08.16/11:26:05] - labelme ini created that is not exist
+[2022.08.16/11:26:15] - log lang is null
+[2022.08.16/11:33:55] - exist labelme ini
+[2022.08.16/11:34:04] - log lang is null

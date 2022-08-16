@@ -17,6 +17,7 @@ from labelme.utils import newIcon
 from labelme.utils import ProcessINI
 from labelme.utils.qt import LogPrint
 from labelme.utils.loginDlg import LoginDLG
+from labelme.utils import newLang
 
 
 def main():
@@ -182,10 +183,14 @@ def main():
     # LogPrint(str("current lang is " + local_lang))
 
     log_translator = QtCore.QTranslator()
+    """
     log_translator.load(
         local_lang, # QtCore.QLocale.system().name(),
         os.getcwd() + "/translate",
     )
+    """
+    local_lang = newLang(local_lang)
+    log_translator.load(local_lang)
 
     login_app = QtWidgets.QApplication([])
     login_app.setApplicationName(__appname__)
@@ -204,13 +209,17 @@ def main():
     if login_app:
         login_app.removeTranslator(log_translator)
         login_app = None
-    time.sleep(1)
+    # time.sleep(1)
     if ret == 0 and config["login_state"] is True:
         mlang = config["local_lang"]
         mlang = str(mlang).replace('.qm', '')
         LogPrint(str("log lang is " + config["local_lang"]))
+        # print("trans file path is " + mlang)
+        # translator.load(os.getcwd() + "/translate/"+mlang)
+
+        mlang = newLang(mlang)
         translator = QtCore.QTranslator()
-        translator.load(os.getcwd() + "/translate/"+mlang+".qm")
+        translator.load(mlang)
         """
         translator.load(
             mlang,

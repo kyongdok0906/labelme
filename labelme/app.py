@@ -36,7 +36,6 @@ from labelme.widgets import ToolBar
 from labelme.widgets import UniqueLabelQListWidget
 from labelme.widgets import ZoomWidget
 
-from labelme.utils import ProcessINI
 from labelme.utils.qt import LogPrint
 
 # FIXME

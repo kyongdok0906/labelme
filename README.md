@@ -24,9 +24,5 @@ python setup.py install
 
 pyinstaller labelme.spec
 
-# Important for multilingual
-
-```bash
-put everything in the translate folder in the same path as the executable
-ex:: translate/ko_KR.qm, zh_CN.qm
-```
+### Build path
+dist/labelme.exe
