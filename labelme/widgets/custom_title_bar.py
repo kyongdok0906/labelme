@@ -24,7 +24,7 @@ class CustomTitleBar(QtWidgets.QWidget):
 
         if self.objectName() == "gradesbar":
             self.title_lb = QLabel(self.tr("Grades (Total %s)" % 0))
-        elif self.objectName() == "productbar":
+        elif self.objectName() == "productsbar":
             self.title_lb = QLabel(self.tr("Product (Total %s)" % 0))
         # self.title_lb.setStyleSheet("QWidget { background-color: rgb(227, 227, 227); }")
         hbox_layout.addWidget(self.title_lb, 0, QtCore.Qt.AlignLeft)
@@ -79,8 +79,6 @@ class CustomTitleBar(QtWidgets.QWidget):
     def press_input_handle(self):
         input_str = self.input_line_edit.text()
         re_str = input_str.strip()
-        #if len(re_str) > 0:
-            #print(re_str)
         _customlistwidget = self._parent_dock.widget()
         if _customlistwidget and len(_customlistwidget.items_list) > 0:
             _customlistwidget.addNewGrade(re_str)

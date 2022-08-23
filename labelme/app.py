@@ -122,7 +122,7 @@ class MainWindow(QtWidgets.QMainWindow):
             flags=self._config["label_flags"],
         )
 
-        # flags part
+        # flags part after delete
 
         self.flag_dock = self.flag_widget = None
         self.flag_dock = QtWidgets.QDockWidget(self.tr("Flags"), self)
@@ -140,7 +140,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.grade_title_bar = CustomTitleBar("gradesbar", self.grades_dock)
         self.grades_dock.setTitleBarWidget(self.grade_title_bar)
-        self.grades_dock.setObjectName("Grades")
+        self.grades_dock.setObjectName("grades")
         self.grades_widget = CustomListWidget(self, "grades")
         #self.receiveGradesFromServer()
         self.grades_dock.setWidget(self.grades_widget)
@@ -154,14 +154,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.products_dock = QtWidgets.QDockWidget(self.tr("Products"), self)
         self.products_dock.setObjectName("products")
         self.products_dock.dockLocationChanged.connect(self.products_dock_toggleViewAction)
-        self.products_title_bar = CustomTitleBar("productbar", self.products_dock)
+        self.products_title_bar = CustomTitleBar("productsbar", self.products_dock)
         self.products_dock.setTitleBarWidget(self.products_title_bar)
         self.products_widget = QtWidgets.QListWidget()
 
         self.products_dock.setWidget(self.products_widget)
         self.products_widget.itemChanged.connect(self.setDirty)
         #if self._config["products"]:
-        threading.Timer(0.3, self.receiveProductsFromServer, args=(True,)).start()
+        #threading.Timer(0.3, self.receiveProductsFromServer, args=(True,)).start()
 
         self.labelList = LabelListWidget()
         self.lastOpenDir = None
@@ -183,6 +183,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 "Press 'Esc' to deselect."
             )
         )
+
+        # after delete
         if self._config["labels"]:
             for label in self._config["labels"]:
                 item = self.uniqLabelList.createItemFromLabel(label)
@@ -192,6 +194,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.label_dock = QtWidgets.QDockWidget(self.tr("Label List"), self)
         self.label_dock.setObjectName("Label List")
         self.label_dock.setWidget(self.uniqLabelList)
+        # after delete
 
         self.fileSearch = QtWidgets.QLineEdit()
         self.fileSearch.setPlaceholderText(self.tr("Search Filename"))
@@ -251,10 +254,12 @@ class MainWindow(QtWidgets.QMainWindow):
             if self._config[dock]["show"] is False:
                 getattr(self, dock).setVisible(False)
 
-        self.addDockWidget(Qt.RightDockWidgetArea, self.flag_dock)
+        #
+
+        #self.addDockWidget(Qt.RightDockWidgetArea, self.flag_dock)
         self.addDockWidget(Qt.RightDockWidgetArea, self.grades_dock)
         self.addDockWidget(Qt.RightDockWidgetArea, self.products_dock)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.label_dock)
+        #self.addDockWidget(Qt.RightDockWidgetArea, self.label_dock)
         self.addDockWidget(Qt.RightDockWidgetArea, self.shape_dock)
         self.addDockWidget(Qt.RightDockWidgetArea, self.file_dock)
 
@@ -775,7 +780,7 @@ class MainWindow(QtWidgets.QMainWindow):
         utils.addActions(
             self.menus.view,
             (
-                self.flag_dock.toggleViewAction(),
+                #self.flag_dock.toggleViewAction(),
                 self.grades_dock.toggleViewAction(),
                 self.products_dock.toggleViewAction(),
                 #self.label_dock.toggleViewAction(),
@@ -2238,6 +2243,29 @@ class MainWindow(QtWidgets.QMainWindow):
         images = natsort.os_sorted(images)
         return images
 
+    def addLabelByGrade(self, shape):
+        if shape.group_id is None:
+            text = shape.label
+        else:
+            text = "{} ({})".format(shape.label, shape.group_id)
+        label_list_item = LabelListWidgetItem(text, shape)
+        self.labelList.addItem(label_list_item)
+        if not self.uniqLabelList.findItemsByLabel(shape.label):
+            item = self.uniqLabelList.createItemFromLabel(shape.label)
+            self.uniqLabelList.addItem(item)
+            rgb = self._get_rgb_by_label(shape.label)
+            self.uniqLabelList.setItemLabel(item, shape.label, rgb)
+        self.labelDialog.addLabelHistory(shape.label)
+        for action in self.actions.onShapesPresent:
+            action.setEnabled(True)
+
+        self._update_shape_color(shape)
+        label_list_item.setText(
+            '{} <font color="#{:02x}{:02x}{:02x}">●</font>'.format(
+                html.escape(text), *shape.fill_color.getRgb()[:3]
+            )
+        )
+
     def receiveGradesFromServer(self, userInfo=None):
         url = 'https://gb9fb258fe17506-apexdb.adb.ap-seoul-1.oraclecloudapps.com/ords/lm/v1/labelme/codes/grades'
         headers = {'Authorization': 'Bearer 98EDFBC2D4A74E9AB806D4718EC503EE6DEDAAAD'}
@@ -2253,6 +2281,7 @@ class MainWindow(QtWidgets.QMainWindow):
         jsstr = httpReq(url, "get", headers)
         if jsstr['message'] == 'success':
             items = jsstr['items']
+            print("All products is ", items)
             items = [
                 {
                     "product": "사용전 철근(가공,직선)"
@@ -2281,3 +2310,55 @@ class MainWindow(QtWidgets.QMainWindow):
             ]
             if len(items):
                 self.loadProducts(items)
+
+    def receiveProductsFromServerByGrade(self):
+        if self.selected_grade:
+            #print(self.selected_grade)
+            url = 'https://gb9fb258fe17506-apexdb.adb.ap-seoul-1.oraclecloudapps.com/ords/lm/v1/labelme/codes/products?grade=' + self.selected_grade
+            headers = {'Authorization': 'Bearer 98EDFBC2D4A74E9AB806D4718EC503EE6DEDAAAD'}
+            jsstr = httpReq(url, "get", headers)
+            if jsstr['message'] == 'success':
+                items = jsstr['items']
+                print("products is ", items)
+                """
+                items = [
+                    {
+                        "product": self.selected_grade + " 사용전 철근(가공,직선)"
+                    },
+                    {
+                        "product": self.selected_grade + " 단조스크랩"
+                    },
+                    {
+                        "product": self.selected_grade + " 금형주"
+                    }
+                ]
+                """
+
+                if len(items):
+                    self.loadProducts(items)
+
+    def receiveLabelsFromServerByGrade(self):
+        if self.selected_grade:
+            #print(self.selected_grade)
+            url = 'https://gb9fb258fe17506-apexdb.adb.ap-seoul-1.oraclecloudapps.com/ords/lm/v1/labelme/codes/labels?grade=' + self.selected_grade
+            headers = {'Authorization': 'Bearer 98EDFBC2D4A74E9AB806D4718EC503EE6DEDAAAD'}
+            jsstr = httpReq(url, "get", headers)
+            if jsstr['message'] == 'success':
+                items = jsstr['items']
+                print("labels is ", items)
+                """
+                items = [
+                    {
+                        "product": self.selected_grade + " 사용전 철근(가공,직선)"
+                    },
+                    {
+                        "product": self.selected_grade + " 단조스크랩"
+                    },
+                    {
+                        "product": self.selected_grade + " 금형주"
+                    }
+                ]
+                """
+
+                if len(items):
+                    self.addLabelByGrade(items)

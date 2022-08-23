@@ -24,7 +24,7 @@ class CustomListWidget(QtWidgets.QWidget):
         self.HB_layout.setContentsMargins(6, 6, 6, 6)
         self.HB_layout.setSpacing(0)
         self.HB_layout.setSizeConstraint(QLayout.SetMinimumSize)
-        self.HB_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        #self.HB_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # refer here funtion addItemsToQHBox
 
@@ -49,8 +49,13 @@ class CustomListWidget(QtWidgets.QWidget):
         return self._items
 
     def event_mouse_click(self):
+        # process ploygon with one selected product
         if self._selected_item is not None and self._objtag == "grades":
             self._app.selected_grade = self._selected_item
+            self._app.receiveProductsFromServerByGrade()
+        elif self._selected_item is not None and self._objtag == "products":
+            pass  # process ploygon with one selected product
+
 
         if len(self.items_list) > 0:
             item_count = len(self.items_list)
