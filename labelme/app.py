@@ -58,6 +58,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     FIT_WINDOW, FIT_WIDTH, MANUAL_ZOOM = 0, 1, 2
     selected_grade = None
+    userInfo = {}
 
     def __init__(
         self,
@@ -140,7 +141,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.grade_title_bar = CustomTitleBar("gradesbar", self.grades_dock)
         self.grades_dock.setTitleBarWidget(self.grade_title_bar)
         self.grades_dock.setObjectName("Grades")
-
         self.grades_widget = CustomListWidget(self, "grades")
         #self.receiveGradesFromServer()
         self.grades_dock.setWidget(self.grades_widget)
@@ -160,7 +160,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.products_dock.setWidget(self.products_widget)
         self.products_widget.itemChanged.connect(self.setDirty)
-
         #if self._config["products"]:
         threading.Timer(0.3, self.receiveProductsFromServer, args=(True,)).start()
 
