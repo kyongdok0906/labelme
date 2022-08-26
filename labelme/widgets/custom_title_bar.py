@@ -26,11 +26,19 @@ class DockInPutTitleBar(QtWidgets.QWidget):
         self.hidnBtn.clicked.connect(self.clickProgramicallyBtn)  # must click this button Programically
         self.hidnBtn.hide()
 
-        self.newLabel = QLabel(str("New Input"))
-        self.titleEdit = QLineEdit(self)
-        # self.titleEdit.hide()
-        #self.titleEdit.editingFinished.connect(self.finishEdit)
-        self.titleEdit.returnPressed.connect(self.returnPresshandle)
+        if self._bartype == "gradesbar" and self._app._config["grade_yn"] == "Y":
+            self.newLabel = QLabel(str("New Input"))
+            self.titleEdit = QLineEdit(self)
+            # self.titleEdit.hide()
+            #self.titleEdit.editingFinished.connect(self.finishEdit)
+            self.titleEdit.returnPressed.connect(self.returnPresshandle)
+
+        elif self._bartype == "productsbar" and self._app._config["product_yn"] == "Y":
+            self.newLabel = QLabel(str("New Input"))
+            self.titleEdit = QLineEdit(self)
+            # self.titleEdit.hide()
+            #self.titleEdit.editingFinished.connect(self.finishEdit)
+            self.titleEdit.returnPressed.connect(self.returnPresshandle)
 
         """
          iconSize = QApplication.style().standardIcon(
@@ -60,10 +68,19 @@ class DockInPutTitleBar(QtWidgets.QWidget):
         boxLayout.addWidget(self.hidnBtn, 0, QtCore.Qt.AlignLeft)
         boxLayout.addStretch()
         boxLayout.addSpacing(20)
-        boxLayout.addWidget(self.newLabel, 0, QtCore.Qt.AlignRight)
-        boxLayout.addSpacing(6)
-        boxLayout.addWidget(self.titleEdit, 0, QtCore.Qt.AlignRight)
-        boxLayout.addSpacing(5)
+
+        if self._bartype == "gradesbar" and self._app._config["grade_yn"] == "Y":
+            boxLayout.addWidget(self.newLabel, 0, QtCore.Qt.AlignRight)
+            boxLayout.addSpacing(6)
+            boxLayout.addWidget(self.titleEdit, 0, QtCore.Qt.AlignRight)
+            boxLayout.addSpacing(5)
+
+        elif self._bartype == "productsbar" and self._app._config["product_yn"] == "Y":
+            boxLayout.addWidget(self.newLabel, 0, QtCore.Qt.AlignRight)
+            boxLayout.addSpacing(6)
+            boxLayout.addWidget(self.titleEdit, 0, QtCore.Qt.AlignRight)
+            boxLayout.addSpacing(5)
+
         boxLayout.addWidget(self.dockButton, 0, QtCore.Qt.AlignRight)
         boxLayout.addSpacing(5)
         boxLayout.addWidget(self.closeButton, 0, QtCore.Qt.AlignRight)
@@ -98,6 +115,9 @@ class DockInPutTitleBar(QtWidgets.QWidget):
     def returnPresshandle(self):  # called when it press enter key
         input_str = self.titleEdit.text()
         re_str = input_str.strip()
+        if len(re_str) < 1:
+            return
+
         if self._bartype == "gradesbar":
             _customlistwidget = self._dockWidget.widget()
             if _customlistwidget and len(_customlistwidget.items_list) > 0:
@@ -105,8 +125,6 @@ class DockInPutTitleBar(QtWidgets.QWidget):
                 self.titleEdit.setText("")
 
         if self._bartype == "productsbar":
-            if len(re_str) < 1:
-                return
             # print(self.objectName() + re_str)
             _customlistwidget = self._dockWidget.widget()
             if _customlistwidget and self._app:
@@ -154,8 +172,8 @@ class DockInPutTitleBar(QtWidgets.QWidget):
     def clickProgramicallyBtn(self):
         self._app.receiveGradesFromServer()
 
+    # non using
     def pressEnterKeyForce(self):
-
         self.titleEdit.setFocus()
         self.titleEdit.setText("")
         press('enter')
@@ -261,7 +279,6 @@ class DockCheckBoxTitleBar(QtWidgets.QWidget):
 
 
 # The class don't using now
-
 class CustomTitleBar(QtWidgets.QWidget):
     def __init__(self, objname, parentDock, app=None):
         super(CustomTitleBar, self).__init__()

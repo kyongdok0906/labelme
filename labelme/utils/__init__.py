@@ -29,4 +29,5 @@ from .qt import fmtShortcut
 # add by me newly
 from .qt import newLang
 from .processini import ProcessINI
+from .processini import AppInfoFile
 from .qt import httpReq

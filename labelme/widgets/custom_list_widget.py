@@ -135,7 +135,7 @@ class CustomListWidget(QtWidgets.QWidget):
                     nonexist = False
             if nonexist is True:
                 items.insert(0, {"grade": new_str})
-                self._app.sendGradeToServer(items, self.addItemsToQHBox)
+                self._app.sendGradeToServer(new_str, items, self.addItemsToQHBox)
                 #self.addItemsToQHBox(items)
             else:
                 return QtWidgets.QMessageBox.critical(

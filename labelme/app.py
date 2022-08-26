@@ -975,8 +975,8 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.filename = filename
 
-        if config["file_search"]:
-            self.fileSearch.setText(config["file_search"])
+        if self._config["file_search"]:
+            self.fileSearch.setText(self._config["file_search"])
             self.fileSearchChanged()
 
         # XXX: Could be completely declarative.
@@ -2392,42 +2392,31 @@ class MainWindow(QtWidgets.QMainWindow):
     def gradeButtonEvent(self, arg):
         self.grade_title_bar.hidnBtn.clicked.emit()
 
-    def receiveGradesFromServer(self, userInfo=None):
+    # send new grade
+    def sendGradeToServer(self, item, items, callback):
         url = 'https://gb9fb258fe17506-apexdb.adb.ap-seoul-1.oraclecloudapps.com/ords/lm/v1/labelme/codes/grades'
         headers = {'Authorization': 'Bearer 98EDFBC2D4A74E9AB806D4718EC503EE6DEDAAAD'}
-        jsstr = httpReq(url, "get", headers)
+        data = {'user_id': self._config['user_id'], 'grade': item}
+        jsstr = httpReq(url, "post", headers, data)
         if jsstr['message'] == 'success':
-            self.grades_widget.set(jsstr['items'])
+            callback(items)  # called addItemsToQHBox
+        else:
+            return QtWidgets.QMessageBox.critical(
+                self, "Error", "<p><b>%s</b></p>%s" % ("Error", jsstr['message'])
+            )
 
-    # send new grade
-    def sendGradeToServer(self, item, callback):
-        #url = 'https://gb9fb258fe17506-apexdb.adb.ap-seoul-1.oraclecloudapps.com/ords/lm/v1/labelme/codes/grades'
-        #headers = {'Authorization': 'Bearer 98EDFBC2D4A74E9AB806D4718EC503EE6DEDAAAD'}
-        #jsstr = httpReq(url, "post", headers)
-        #if jsstr['message'] == 'success':
-        callback(item)
-
-    # This function be not used now
-    def receiveProductsFromServer(self, userInfo=None):
+    # send new product
+    def sendProductToServer(self, pstr, callback):
         url = 'https://gb9fb258fe17506-apexdb.adb.ap-seoul-1.oraclecloudapps.com/ords/lm/v1/labelme/codes/products'
         headers = {'Authorization': 'Bearer 98EDFBC2D4A74E9AB806D4718EC503EE6DEDAAAD'}
-        jsstr = httpReq(url, "get", headers)
+        data = {'user_id': self._config['user_id'], 'product': pstr}
+        jsstr = httpReq(url, "post", headers, data)
         if jsstr['message'] == 'success':
-            items = jsstr['items']
-            print("All products is ", items)
-            items = [
-                {
-                    "product": "사용전 철근(가공,직선)"
-                },
-                {
-                    "product": "단조스크랩"
-                },
-                {
-                    "product": "금형주"
-                }
-            ]
-            if len(items):
-                self.loadProducts(items)
+            callback(pstr)  # called addItemsToQHBox
+        else:
+            return QtWidgets.QMessageBox.critical(
+                self, "Error", "<p><b>%s</b></p>%s" % ("Error", jsstr['message'])
+            )
 
     def receiveProductsFromServerByGrade(self):
         if self.selected_grade:
@@ -2440,15 +2429,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 print("products is ", items)
                 if len(items):
                     self.loadProducts(items)
-
-    # send new product
-    def sendProductToServer(self, pstr, callback):
-        item = {"product": pstr}
-        # url = 'https://gb9fb258fe17506-apexdb.adb.ap-seoul-1.oraclecloudapps.com/ords/lm/v1/labelme/codes/grades'
-        # headers = {'Authorization': 'Bearer 98EDFBC2D4A74E9AB806D4718EC503EE6DEDAAAD'}
-        # jsstr = httpReq(url, "post", headers)
-        # if jsstr['message'] == 'success':
-        callback(pstr)
+            else:
+                return QtWidgets.QMessageBox.critical(
+                    self, "Error", "<p><b>%s</b></p>%s" % ("Error", jsstr['message'])
+                )
 
     def receiveLabelsFromServerByGrade(self):
         if self.selected_grade:
@@ -2461,4 +2445,33 @@ class MainWindow(QtWidgets.QMainWindow):
                 print("labels is ", items)
                 if len(items):
                     self.labelList.addRows(items)
+            else:
+                return QtWidgets.QMessageBox.critical(
+                    self, "Error", "<p><b>%s</b></p>%s" % ("Error", jsstr['message'])
+                )
 
+    def receiveGradesFromServer(self):
+        url = 'https://gb9fb258fe17506-apexdb.adb.ap-seoul-1.oraclecloudapps.com/ords/lm/v1/labelme/codes/grades'
+        headers = {'Authorization': 'Bearer 98EDFBC2D4A74E9AB806D4718EC503EE6DEDAAAD'}
+        jsstr = httpReq(url, "get", headers)
+        if jsstr['message'] == 'success':
+            self.grades_widget.set(jsstr['items'])
+        else:
+            return QtWidgets.QMessageBox.critical(
+                self, "Error", "<p><b>%s</b></p>%s" % ("Error", jsstr['message'])
+            )
+
+    # This function be not used now
+    def receiveProductsFromServer(self):
+        url = 'https://gb9fb258fe17506-apexdb.adb.ap-seoul-1.oraclecloudapps.com/ords/lm/v1/labelme/codes/products'
+        headers = {'Authorization': 'Bearer 98EDFBC2D4A74E9AB806D4718EC503EE6DEDAAAD'}
+        jsstr = httpReq(url, "get", headers)
+        if jsstr['message'] == 'success':
+            items = jsstr['items']
+            print("All products is ", items)
+            if len(items):
+                self.loadProducts(items)
+        else:
+            return QtWidgets.QMessageBox.critical(
+                self, "Error", "<p><b>%s</b></p>%s" % ("Error", jsstr['message'])
+            )
