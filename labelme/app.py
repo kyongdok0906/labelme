@@ -2437,7 +2437,7 @@ class MainWindow(QtWidgets.QMainWindow):
             jsstr = httpReq(url, "get", headers)
             if jsstr['message'] == 'success':
                 items = jsstr['items']
-                print("products is ", items[0])
+                print("products is ", items)
                 if len(items):
                     self.loadProducts(items)
 
@@ -2458,7 +2458,7 @@ class MainWindow(QtWidgets.QMainWindow):
             jsstr = httpReq(url, "get", headers)
             if jsstr['message'] == 'success':
                 items = jsstr['items']
-                print("labels is ", items[0])
+                print("labels is ", items)
                 if len(items):
                     self.labelList.addRows(items)
 
