@@ -1429,6 +1429,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             text = "{} ({})".format(shape.label, shape.group_id)
         label_list_item = LabelListWidgetItem(text, shape)
+        return  # ckd
         self.labelList.addItem(label_list_item)
         if not self.uniqLabelList.findItemsByLabel(shape.label):
             item = self.uniqLabelList.createItemFromLabel(shape.label)
@@ -1707,11 +1708,20 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def newShape(self):
-        tm = self.labelList.getCheckedItems()
-        if len(tm) < 1:
+        items = self.labelList.getItems()
+        if len(items) < 1:
+            self.canvas.shapes.pop()
+            self.canvas.repaint()
             return self.errorMessage(self.tr("Wrong Empty label"), self.tr("please select one polygon label"))
 
-        text, flags, group_id = self.labelDialog.popUpItems(tm)
+        text = None
+        flags = {}
+        group_id = None
+        if self._config["display_label_popup"]:
+            previous_text = self.labelDialog._curSelectedText
+            text, flags, group_id = self.labelDialog.popUpItems(items)
+            if not text:
+                self.labelDialog.edit.setText(previous_text)
 
         if text and not self.validateLabel(text):
             self.errorMessage(
@@ -1722,9 +1732,10 @@ class MainWindow(QtWidgets.QMainWindow):
             )
             text = ""
         if text:
-            self.labelList.clearSelection()
+            # self.labelList.clearSelection()
             shape = self.canvas.setLastLabel(text, flags)
             shape.group_id = group_id
+
             self.addLabel(shape)
             self.actions.editMode.setEnabled(True)
             self.actions.undoLastPoint.setEnabled(False)

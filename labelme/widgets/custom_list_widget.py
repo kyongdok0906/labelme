@@ -1,5 +1,6 @@
 import threading
 from qtpy import QtCore, QtWidgets, QtGui
+from qtpy.QtGui import QColor, QColorConstants
 from qtpy.QtCore import Qt
 
 from qtpy.QtWidgets import QLayout, QHBoxLayout, QVBoxLayout, \
@@ -185,11 +186,28 @@ class RowWidgetItem(QtWidgets.QWidget):
         label = QtWidgets.QLabel(self)
         label.setText(item["label"])
         #label.setStyleSheet("QWidget { font-size: 12px; }")
+
+        color_label = QtWidgets.QLabel(self)
+
+        try:
+            color_txt = item["COLOR"]
+        except:
+            color_txt = item["color"]
+
+        if not color_txt or "" == color_txt:
+            color_txt = "red"
+
+        color_label.setText("")
+        color_label.setStyleSheet("QLabel{border: 1px soild #aaa; border-radius: 7px; background: %s;}" % color_txt)
+        color_label.setFixedWidth(8)
+
         self.check_box = QtWidgets.QCheckBox(self)
         self.check_box.stateChanged.connect(self.stateChangeHandle)
 
         horizontal_layout.addSpacing(6)
         horizontal_layout.addWidget(label, 0, QtCore.Qt.AlignLeft)
+        horizontal_layout.addSpacing(6)
+        horizontal_layout.addWidget(color_label, 0, QtCore.Qt.AlignLeft)
         horizontal_layout.addStretch()
         horizontal_layout.addWidget(self.check_box, 0, QtCore.Qt.AlignRight)
         horizontal_layout.addSpacing(40)
@@ -245,7 +263,8 @@ class CustomLabelListWidget(QtWidgets.QWidget):
         self._items = [
             """
             {
-                "label": "철못(기 사용한 것)"
+                "label": "철못(기 사용한 것)",
+                "COLOR": "red"
             }
             """
         ]
@@ -323,7 +342,7 @@ class CustomLabelListWidget(QtWidgets.QWidget):
         for it in range(len(self._itemList)):
             item = self._itemList[it]
             if item._selected is True:
-                checkitems.append(item._data)
+                checkitems.append(item)
         return checkitems
 
 

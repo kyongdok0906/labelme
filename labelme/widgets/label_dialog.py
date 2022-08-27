@@ -27,6 +27,7 @@ class LabelQLineEdit(QtWidgets.QLineEdit):
             super(LabelQLineEdit, self).keyPressEvent(e)
 
 
+
 class LabelDialog(QtWidgets.QDialog):
     def __init__(
         self,
@@ -258,13 +259,15 @@ class LabelSelectDialog(QtWidgets.QDialog):
         self._app = parent  # add ckd
         self._list_items = []
         self._curSelectedText = ""
+        self._state = "s"
 
         self.edit = LabelQLineEdit()
         self.edit.setPlaceholderText(text)
-        self.edit.setValidator(labelme.utils.labelValidator())
+        # self.edit.setValidator(labelme.utils.labelValidator())
         self.edit.editingFinished.connect(self.postProcess)
         if flags:
             self.edit.textChanged.connect(self.updateFlags)
+
         self.edit_group_id = QtWidgets.QLineEdit()
         self.edit_group_id.setPlaceholderText("Group ID")
         self.edit_group_id.setValidator(
@@ -317,9 +320,10 @@ class LabelSelectDialog(QtWidgets.QDialog):
         self.flagsLayout = QtWidgets.QVBoxLayout()
         self.resetFlags()
         layout.addItem(self.flagsLayout)
-        self.edit.textChanged.connect(self.updateFlags)
+        # self.edit.textChanged.connect(self.updateFlags)
         self.setLayout(layout)
         # completion
+        """
         completer = QtWidgets.QCompleter()
         if not QT5 and completion != "startswith":
             logger.warn(
@@ -338,6 +342,8 @@ class LabelSelectDialog(QtWidgets.QDialog):
             raise ValueError("Unsupported completion: {}".format(completion))
         completer.setModel(self.labelList.model())
         self.edit.setCompleter(completer)
+        """
+
 
     def addLabelHistory(self, label):
         if self.labelList.findItems(label, QtCore.Qt.MatchExactly):
@@ -349,28 +355,64 @@ class LabelSelectDialog(QtWidgets.QDialog):
     def labelSelected_org(self, item):
         self.edit.setText(item.text())
 
-    def labelSelected(self, item):
-        self._curSelectedText = item.text()
+    def labelSelected(self, pitem):
+        print(pitem)
+        #item = self.labelList.currentItem()
+        try:
+            txt = pitem.text()
+        except:
+            txt = ""
+
+        if txt is not None and txt != "":
+            self._curSelectedText = txt
+        self._state = ""
+        # self.edit.setText(item.text())
 
     def validate(self):
-        text = self.edit.text()
+        if self._state == "s":
+            return
+        text = self._curSelectedText
         if hasattr(text, "strip"):
             text = text.strip()
         else:
             text = text.trimmed()
         if text:
+            self._curSelectedText = ""
             self.accept()
 
     def labelDoubleClicked(self, item):
         self.validate()
 
     def postProcess(self):
+        self._state = "s"
         text = self.edit.text()
         if hasattr(text, "strip"):
             text = text.strip()
         else:
             text = text.trimmed()
-        self.edit.setText(text)
+
+        if text == "":
+            self.labelList.clear()
+            for pitem in self._list_items:
+                lbtxt = pitem._data["label"]
+                if hasattr(lbtxt, "strip"):
+                    lbtxt = lbtxt.strip()
+                else:
+                    lbtxt = lbtxt.trimmed()
+
+                self.labelList.addItem(lbtxt)
+        else:
+            self.labelList.clear()
+            for pitem in self._list_items:
+                lbtxt = pitem._data["label"]
+                if hasattr(lbtxt, "strip"):
+                    lbtxt = lbtxt.strip()
+                else:
+                    lbtxt = lbtxt.trimmed()
+
+                if lbtxt.find(text) > -1:
+                    self.labelList.addItem(lbtxt)
+
 
     def updateFlags(self, label_new):
         # keep state of shared flags
@@ -457,11 +499,11 @@ class LabelSelectDialog(QtWidgets.QDialog):
 
     def popUpItems(self, items):
         self._list_items.clear()
-        self._list_items = items
+        self._list_items = items[:]
         for pitem in items:
-            lb = pitem["label"]
+            lb = pitem._data["label"]
             self.labelList.addItem(lb)
         if self.exec_():
-            return self.edit.text(), self.getFlags(), self.getGroupId()
+            return self._curSelectedText, self.getFlags(), self.getGroupId()
         else:
             return None, None, None
