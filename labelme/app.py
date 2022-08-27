@@ -33,6 +33,7 @@ from labelme.widgets import BrightnessContrastDialog
 from labelme.widgets import Canvas
 from labelme.widgets import FileDialogPreview
 from labelme.widgets import LabelDialog
+from labelme.widgets import LabelSelectDialog
 from labelme.widgets import LabelListWidget
 from labelme.widgets import LabelListWidgetItem
 from labelme.widgets import ToolBar
@@ -46,6 +47,7 @@ from labelme.widgets import DockCheckBoxTitleBar
 from labelme.widgets import CustomListWidget
 from labelme.widgets import CustomLabelListWidget
 from labelme.widgets import topToolWidget
+from labelme.utils import labelme2coco
 
 # FIXME
 # - [medium] Set max zoom value to something big enough for FitWidth/Window
@@ -115,7 +117,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self._copied_shapes = None
 
         # Main widgets and related state.
+        """
+        
         self.labelDialog = LabelDialog(
+            parent=self,
+            labels=self._config["labels"],
+            sort_labels=self._config["sort_labels"],
+            show_text_field=self._config["show_label_text_field"],
+            completion=self._config["label_completion"],
+            fit_to_content=self._config["fit_to_content"],
+            flags=self._config["label_flags"],
+        )
+        """
+
+        self.labelDialog = LabelSelectDialog(
+            text=self.tr("Enter Label for searching"),
             parent=self,
             labels=self._config["labels"],
             sort_labels=self._config["sort_labels"],
@@ -144,18 +160,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.grades_dock.setTitleBarWidget(self.grade_title_bar)
 
         self.grades_widget = CustomListWidget(self, "grades")
-        #self.receiveGradesFromServer()
         self.grades_dock.setWidget(self.grades_widget)
         #if self._config["grades"]:
         threading.Timer(0.1, self.gradeButtonEvent, args=(True,)).start()
-        #self.grades_dock.dockLocationChanged.connect(self.grades_dock_toggleViewAction)
 
         # products part ckd
         self.selected_product = None
         self.products_dock = self.products_widget = None
         self.products_dock = QtWidgets.QDockWidget(self.tr("Products (Total %s)" % 0), self)
         self.products_dock.setObjectName("products")
-        #self.products_dock.dockLocationChanged.connect(self.products_dock_toggleViewAction)
         self.products_title_bar = DockInPutTitleBar(self.products_dock, "productsbar", self)
         self.products_dock.setTitleBarWidget(self.products_title_bar)
 
@@ -164,14 +177,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.products_widget.setContentsMargins(3, 6, 3, 3)
         self.products_dock.setWidget(self.products_widget)
         self.products_widget.itemChanged.connect(self.setDirty)
-        #if self._config["products"]:
-        #threading.Timer(0.3, self.receiveProductsFromServer, args=(True,)).start()
-
-
+        self.products_widget.itemSelectionChanged.connect(
+            self.productsSelectionChanged
+        )
 
         self.labelList = CustomLabelListWidget(self)
         self.lastOpenDir = None
-
         #self.labelList.itemSelectionChanged.connect(self.labelSelectionChanged)
         #self.labelList.itemDoubleClicked.connect(self.editLabel)
         #self.labelList.itemChanged.connect(self.labelItemChanged)
@@ -185,10 +196,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.shape_dock.setTitleBarWidget(self.customLabelTitleBar)
         self.shape_dock.setWidget(self.labelList)
 
+        # top Tool area
+        self.selected_shapType = None
         self.topToolWidget = topToolWidget("toptool", self)
         self.topToolbar_dock = QtWidgets.QDockWidget(self.tr("Top bar"), self)
         self.topToolbar_dock.setWidget(self.topToolWidget)
         self.topToolbar_dock.setTitleBarWidget(QtWidgets.QWidget())
+        self.topToolWidget.setEnabled(False)
         """ old code
         self.labelList = LabelListWidget()
         self.lastOpenDir = None
@@ -674,6 +688,7 @@ class MainWindow(QtWidgets.QMainWindow):
         fill_drawing.trigger()
         
         # add ckd //
+        """
         createModeTop = action(
             self.tr("Create Polygons"),
             lambda: self.toggleDrawMode(False, createMode="polygon"),
@@ -722,7 +737,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.tr("Start drawing linestrip. Ctrl+LeftClick ends creation."),
             enabled=False,
         )
-
+        """
         # //add ckd
 
         # Label list context menu.
@@ -760,12 +775,12 @@ class MainWindow(QtWidgets.QMainWindow):
             createPointMode=createPointMode,
             createLineStripMode=createLineStripMode,
 
-            createModeTop=createModeTop,
-            createRectangleModeTop=createRectangleModeTop,
-            createCircleModeTop=createCircleModeTop,
-            createLineModeTop=createLineModeTop,
-            createPointModeTop=createPointModeTop,
-            createLineStripModeTop=createLineStripModeTop,
+            # createModeTop=createModeTop,
+            # createRectangleModeTop=createRectangleModeTop,
+            # createCircleModeTop=createCircleModeTop,
+            # createLineModeTop=createLineModeTop,
+            # createPointModeTop=createPointModeTop,
+            # createLineStripModeTop=createLineStripModeTop,
 
             zoom=zoom,
             zoomIn=zoomIn,
@@ -934,7 +949,8 @@ class MainWindow(QtWidgets.QMainWindow):
         # add ckd
         self.toptools = self.toptoolbar("Top")
         # Menu buttons on Left
-        self.actions.toptool = (
+        """
+         self.actions.toptool = (
             createModeTop,
             createRectangleModeTop,
             createCircleModeTop,
@@ -942,6 +958,8 @@ class MainWindow(QtWidgets.QMainWindow):
             createPointModeTop,
             createLineStripModeTop
         )
+        """
+
 
         self.statusBar().showMessage(str(self.tr("%s started.")) % __appname__)
         self.statusBar().show()
@@ -1133,7 +1151,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.statusBar().showMessage(message, delay)
 
     def resetState(self):
-        self.labelList.clear()
+        # self.labelList.clear()  # this block now when polygon list is deleted
         self.filename = None
         self.imagePath = None
         self.imageData = None
@@ -1210,7 +1228,6 @@ class MainWindow(QtWidgets.QMainWindow):
     """
     def toggleDrawingSensitive(self, drawing=True):
         """Toggle drawing sensitive.
-
         In the middle of drawing, toggling between modes should be disabled.
         """
         self.actions.editMode.setEnabled(not drawing)
@@ -1363,6 +1380,14 @@ class MainWindow(QtWidgets.QMainWindow):
             pattern=self.fileSearch.text(),
             load=False,
         )
+
+    def productsSelectionChanged(self):
+        items = self.products_widget.selectedItems()
+        if not items:
+            return
+        item = items[0]
+        print(str(item.text()))
+        self.selected_product = item.text()
 
     def fileSelectionChanged(self):
         items = self.fileListWidget.selectedItems()
@@ -1642,7 +1667,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # Callback functions:
 
-    def newShape(self):
+    def newShape_org(self):
         """Pop-up and give focus to the label editor.
 
         position MUST be in global coordinates.
@@ -1658,6 +1683,35 @@ class MainWindow(QtWidgets.QMainWindow):
             text, flags, group_id = self.labelDialog.popUp(text)
             if not text:
                 self.labelDialog.edit.setText(previous_text)
+
+        if text and not self.validateLabel(text):
+            self.errorMessage(
+                self.tr("Invalid label"),
+                self.tr("Invalid label '{}' with validation type '{}'").format(
+                    text, self._config["validate_label"]
+                ),
+            )
+            text = ""
+        if text:
+            self.labelList.clearSelection()
+            shape = self.canvas.setLastLabel(text, flags)
+            shape.group_id = group_id
+            self.addLabel(shape)
+            self.actions.editMode.setEnabled(True)
+            self.actions.undoLastPoint.setEnabled(False)
+            self.actions.undo.setEnabled(True)
+            self.setDirty()
+        else:
+            self.canvas.undoLastLine()
+            self.canvas.shapesBackups.pop()
+
+
+    def newShape(self):
+        tm = self.labelList.getCheckedItems()
+        if len(tm) < 1:
+            return self.errorMessage(self.tr("Wrong Empty label"), self.tr("please select one polygon label"))
+
+        text, flags, group_id = self.labelDialog.popUpItems(tm)
 
         if text and not self.validateLabel(text):
             self.errorMessage(
@@ -1909,6 +1963,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.toggleActions(True)
         self.canvas.setFocus()
         self.status(str(self.tr("Loaded %s")) % osp.basename(str(filename)))
+
+        # add ckd
+        self.topToolWidget.setEnabled(True)
+
         return True
 
     def resizeEvent(self, event):
@@ -2426,7 +2484,7 @@ class MainWindow(QtWidgets.QMainWindow):
             jsstr = httpReq(url, "get", headers)
             if jsstr['message'] == 'success':
                 items = jsstr['items']
-                print("products is ", items)
+                # print("products is ", items)
                 if len(items):
                     self.loadProducts(items)
             else:
@@ -2442,7 +2500,7 @@ class MainWindow(QtWidgets.QMainWindow):
             jsstr = httpReq(url, "get", headers)
             if jsstr['message'] == 'success':
                 items = jsstr['items']
-                print("labels is ", items)
+                # print("labels is ", items)
                 if len(items):
                     self.labelList.addRows(items)
             else:
@@ -2468,7 +2526,7 @@ class MainWindow(QtWidgets.QMainWindow):
         jsstr = httpReq(url, "get", headers)
         if jsstr['message'] == 'success':
             items = jsstr['items']
-            print("All products is ", items)
+            # print("All products is ", items)
             if len(items):
                 self.loadProducts(items)
         else:

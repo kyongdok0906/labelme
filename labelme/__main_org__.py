@@ -193,6 +193,8 @@ def main():
         local_lang = str(lang).replace('.qm', '')
     """
     # end get lang of UI
+
+    config["local_lang"] = local_lang
     log_translator = QtCore.QTranslator()
     local_lang = newLang(local_lang)
     log_translator.load(local_lang)
@@ -202,12 +204,11 @@ def main():
     login_app.setWindowIcon(newIcon("icon"))
     login_app.installTranslator(log_translator)
 
-    config["local_lang"] = local_lang
     config["login_state"] = False
     config["grade_yn"] = "N"
     config["product_yn"] = "N"
     config["label_yn"] = "N"
-    config["role_id"] = ""
+    config["user_id"] = ""
 
     login_win = LoginDLG(
         config=config

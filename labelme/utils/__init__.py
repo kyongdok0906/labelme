@@ -30,4 +30,5 @@ from .qt import fmtShortcut
 from .qt import newLang
 from .processini import ProcessINI
 from .processini import AppInfoFile
+from .labelme2coco import labelme2coco
 from .qt import httpReq

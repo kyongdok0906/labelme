@@ -46,6 +46,7 @@ class CustomListWidget(QtWidgets.QWidget):
         self.setLayout(hb_layout)
 
     def set(self, items):
+        self._items.clear()
         self._items = items
         self.addItemsToQHBox(self._items)
 
@@ -184,12 +185,13 @@ class RowWidgetItem(QtWidgets.QWidget):
         label = QtWidgets.QLabel(self)
         label.setText(item["label"])
         #label.setStyleSheet("QWidget { font-size: 12px; }")
-        check_box = QtWidgets.QCheckBox(self)
+        self.check_box = QtWidgets.QCheckBox(self)
+        self.check_box.stateChanged.connect(self.stateChangeHandle)
 
         horizontal_layout.addSpacing(6)
         horizontal_layout.addWidget(label, 0, QtCore.Qt.AlignLeft)
         horizontal_layout.addStretch()
-        horizontal_layout.addWidget(check_box, 0, QtCore.Qt.AlignRight)
+        horizontal_layout.addWidget(self.check_box, 0, QtCore.Qt.AlignRight)
         horizontal_layout.addSpacing(40)
         self.setLayout(horizontal_layout)
         self.setStyleSheet("QWidget { background-color: rgb(255, 255, 255); border: 0; font-size: 12px}")
@@ -197,7 +199,7 @@ class RowWidgetItem(QtWidgets.QWidget):
         self.setAutoFillBackground(True)
 
     def mousePressEvent(self, event):
-        print("row click")
+        # print("row click")
         if self._parent is not None:
             self._parent.mousePressEventHandle(event, self._data)
 
@@ -208,6 +210,21 @@ class RowWidgetItem(QtWidgets.QWidget):
             self.setStyleSheet("QWidget { background-color: rgb(255, 255, 255); border: 0; font-size: 12px}")
         self.setAutoFillBackground(True)
 
+    def checkitem(self, flag):
+        if flag is True:
+            self.check_box.setCheckState(Qt.Checked)
+            self._selected = True
+        else:
+            self.check_box.setCheckState(Qt.Unchecked)
+            self._selected = False
+
+    def stateChangeHandle(self, state):
+        if state == Qt.Checked:
+            # self.signal.polygon_check_signal.emit(1)
+            self._selected = True
+        else:
+            # self.signal.polygon_check_signal.emit(0)
+            self._selected = False
 
 
 
@@ -216,14 +233,13 @@ class CustomLabelListWidget(QtWidgets.QWidget):
     # itemDoubleClicked = QtCore.Signal(CustomLabelListWidgetItem)
     # itemSelectionChanged = QtCore.Signal(list, list)
 
-    def __init__(self, parent):
+    def __init__(self, app):
         super(CustomLabelListWidget, self).__init__()
 
         self.signal = Signal()
         self.signal.polygon_check_signal.connect(self.polygon_label_status)
-
-        self._checkedItems = []
-        self._app = parent
+        self._app = app
+        self._selected_item = None
         self._itemList = []
         self._model = False
         self._items = [
@@ -266,16 +282,26 @@ class CustomLabelListWidget(QtWidgets.QWidget):
             if rowItem._data == pdata:
                 rowItem.changeBackground(True)
                 rowItem._selected = True
+                self._selected_item = rowItem
             else:
                 rowItem.changeBackground(False)
                 rowItem._selected = False
 
+    def getSelecteItem(self):
+        if self._selected_item is not None:
+            return self._selected_item
+        return None
+
+    def getDataSelecteItem(self):
+        if self._selected_item is not None:
+            return self._selected_item._data
+        return ""
 
     def addRows(self, items):
         if len(items) < 1:
             return
-        self._itemList.clear()
-        self.clearLayout(self.vContent_layout)
+
+        self.clear()
 
         for it in range(len(items)):
             rowItem = RowWidgetItem(items[it], self)
@@ -285,6 +311,21 @@ class CustomLabelListWidget(QtWidgets.QWidget):
         if self._app.shape_dock:
             self._app.shape_dock.titleBarWidget().titleLabel.setText(self.tr("Polygon Labels (Total %s)" % len(self._itemList)))
         self._model = True
+
+    def getItems(self):
+        if len(self._itemList) > 0:
+            return self._itemList
+        else:
+            return []
+
+    def getCheckedItems(self):
+        checkitems = []
+        for it in range(len(self._itemList)):
+            item = self._itemList[it]
+            if item._selected is True:
+                checkitems.append(item._data)
+        return checkitems
+
 
     def clearLayout(self, layout):
         for i in reversed(range(layout.count())):
@@ -311,8 +352,8 @@ class CustomLabelListWidget(QtWidgets.QWidget):
             #print("ok", flag)
             for it in range(len(self._itemList)):
                 item = self._itemList[it]
-                item.hide()
-
+                item.checkitem(True)
+                # item.hide()
         else:
             #show uncheck items
             #print("err", flag)
@@ -320,7 +361,12 @@ class CustomLabelListWidget(QtWidgets.QWidget):
                 item = self._itemList[it]
                 item._selected = False
                 item.changeBackground(False)
-                item.show()
+                item.checkitem(False)
+                #item.show()
+
+    def clear(self):
+        self._itemList.clear()
+        self.clearLayout(self.vContent_layout)
 
     # signal no using now
     @pyqtSlot(int)
@@ -350,16 +396,20 @@ class topToolWidget(QtWidgets.QWidget):
 
         self.polygon = QToolButton()
         self.polygon.setIcon(utils.newIcon("poly"))
+        self.polygon.clicked.connect(self.polygonClick)
         #self.polygon.setFixedSize(50, 50)
 
         self.rect = QToolButton()
         self.rect.setIcon(utils.newIcon("rect"))
+        self.rect.clicked.connect(self.rectClick)
 
         self.circle = QToolButton()
         self.circle.setIcon(utils.newIcon("circle"))
+        self.circle.clicked.connect(self.circleClick)
 
         self.line = QToolButton()
         self.line.setIcon(utils.newIcon("line"))
+        self.line.clicked.connect(self.lineClick)
 
         hbox_layout.addSpacing(20)
         hbox_layout.addWidget(self.polygon, 0, QtCore.Qt.AlignLeft)
@@ -372,3 +422,39 @@ class topToolWidget(QtWidgets.QWidget):
         hbox_layout.addStretch(1)
 
         self.setLayout(hbox_layout)
+
+    def polygonClick(self, arg):
+        self.polygon.setEnabled(False)
+        self.rect.setEnabled(True)
+        self.circle.setEnabled(True)
+        self.line.setEnabled(True)
+        if self._app is not None:
+            self._app.selected_shapType = "polygon"
+            self._app.toggleDrawMode(False, createMode="polygon")
+
+    def rectClick(self):
+        self.polygon.setEnabled(True)
+        self.rect.setEnabled(False)
+        self.circle.setEnabled(True)
+        self.line.setEnabled(True)
+        if self._app is not None:
+            self._app.selected_shapType = "rectangle"
+            self._app.toggleDrawMode(False, createMode="rectangle")
+
+    def circleClick(self):
+        self.polygon.setEnabled(True)
+        self.rect.setEnabled(True)
+        self.circle.setEnabled(False)
+        self.line.setEnabled(True)
+        if self._app is not None:
+            self._app.selected_shapType = "circle"
+            self._app.toggleDrawMode(False, createMode="circle")
+
+    def lineClick(self):
+        self.polygon.setEnabled(True)
+        self.rect.setEnabled(True)
+        self.circle.setEnabled(True)
+        self.line.setEnabled(False)
+        if self._app is not None:
+            self._app.selected_shapType = "line"
+            self._app.toggleDrawMode(False, createMode="line")
