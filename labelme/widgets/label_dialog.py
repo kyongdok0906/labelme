@@ -2,12 +2,12 @@ import re
 
 from qtpy import QT_VERSION
 from qtpy import QtCore
+from qtpy.QtCore import Qt
 from qtpy import QtGui
 from qtpy import QtWidgets
 
 from labelme.logger import logger
 import labelme.utils
-
 
 QT5 = QT_VERSION[0] == "5"
 
@@ -239,6 +239,169 @@ class LabelDialog(QtWidgets.QDialog):
             return None, None, None
 
 
+class DlgRowWidgetItem(QtWidgets.QWidget):
+    _data = {}
+    _selected = False
+
+    def __init__(self, item, parent=None):
+        self._data = item
+        self._parent = parent
+
+        super(DlgRowWidgetItem, self).__init__()
+        horizontal_layout = QtWidgets.QHBoxLayout(self)
+        horizontal_layout.setSpacing(1)
+        horizontal_layout.setContentsMargins(0, 0, 0, 0)
+
+        label = QtWidgets.QLabel(self)
+        label.setText(item["label"])
+        #label.setStyleSheet("QWidget { font-size: 12px; }")
+
+        color_label = QtWidgets.QLabel(self)
+
+        try:
+            color_txt = item["COLOR"]
+        except:
+            color_txt = item["color"]
+
+        if not color_txt or "" == color_txt:
+            color_txt = "cyan"
+
+        color_label.setText("")
+        color_label.setStyleSheet("QLabel{border: 1px soild #aaa; border-radius: 7px; background: %s;}" % color_txt)
+        color_label.setFixedWidth(8)
+
+        #self.check_box = QtWidgets.QCheckBox(self)
+        #self.check_box.stateChanged.connect(self.stateChangeHandle)
+
+        horizontal_layout.addSpacing(6)
+        horizontal_layout.addWidget(label, 0, QtCore.Qt.AlignLeft)
+        horizontal_layout.addSpacing(6)
+        horizontal_layout.addWidget(color_label, 0, QtCore.Qt.AlignLeft)
+        horizontal_layout.addStretch()
+        #horizontal_layout.addWidget(self.check_box, 0, QtCore.Qt.AlignRight)
+        horizontal_layout.addSpacing(40)
+        self.setLayout(horizontal_layout)
+        self.setStyleSheet("QWidget { background-color: rgb(255, 255, 255); border: 0; font-size: 12px}")
+
+        self.setAutoFillBackground(True)
+
+    def mousePressEvent(self, event):
+        # print("row click")
+        if self._parent is not None:
+            self._parent.mousePressEventHandle(event, self._data)
+
+    def changeBackground(self, state):
+        if state is True:
+            self.setStyleSheet("QWidget { background-color: rgb(204, 232, 255); border: 0; font-size: 12px}")
+        else:
+            self.setStyleSheet("QWidget { background-color: rgb(255, 255, 255); border: 0; font-size: 12px}")
+        self.setAutoFillBackground(True)
+
+    def checkitem(self, flag):
+        if flag is True:
+            self.check_box.setCheckState(Qt.Checked)
+            self._selected = True
+        else:
+            self.check_box.setCheckState(Qt.Unchecked)
+            self._selected = False
+
+    def stateChangeHandle(self, state):
+        if state == Qt.Checked:
+            # self.signal.polygon_check_signal.emit(1)
+            self._selected = True
+        else:
+            # self.signal.polygon_check_signal.emit(0)
+            self._selected = False
+
+
+class DlgLabelListWidget(QtWidgets.QWidget):
+    def __init__(self, parent):
+        super(DlgLabelListWidget, self).__init__()
+        self._selected_item = None
+        self._itemList = []
+        self._model = False
+        self._parent = parent
+
+        self.vContent_layout = QtWidgets.QVBoxLayout(self)
+        self.vContent_layout.setContentsMargins(0, 5, 0, 5)
+        self.vContent_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        # add here vContent_layout
+
+        self.twidget = QtWidgets.QWidget(self)
+        self.twidget.setLayout(self.vContent_layout)
+        self.twidget.setStyleSheet("QWidget { background-color: rgb(255, 255, 255);}")
+
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidget(self.twidget)
+        scroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        scroll.setWidgetResizable(True)
+
+        hb_layout = QtWidgets.QHBoxLayout()
+        hb_layout.addWidget(scroll)
+        hb_layout.setContentsMargins(0, 0, 0, 0)
+        hb_layout.setSpacing(0)
+        self.setLayout(hb_layout)
+
+    def addItems(self, items):
+        if len(items) < 1:
+            return
+
+        self.clear()
+
+        for it in range(len(items)):
+            rowItem = DlgRowWidgetItem(items[it], self)
+            self.vContent_layout.addWidget(rowItem)
+            self._itemList.append(rowItem)
+        self._model = True
+
+    def mousePressEventHandle(self, event, pdata):
+        # print("list row click")
+        for it in range(len(self._itemList)):
+            rowItem = self._itemList[it]
+            if rowItem._data == pdata:
+                rowItem.changeBackground(True)
+                rowItem._selected = True
+                self._selected_item = rowItem
+            else:
+                rowItem.changeBackground(False)
+                rowItem._selected = False
+
+        self._parent.labelItemSelected(pdata)
+
+    def getSelectedItem(self):
+        if self._selected_item is not None:
+            return self._selected_item
+        return None
+
+    def getDataSelectedItem(self):
+        if self._selected_item is not None:
+            return self._selected_item._data
+        return ""
+
+    def clearLayout(self, layout):
+        for i in reversed(range(layout.count())):
+            item = layout.itemAt(i)
+            if isinstance(item, QtWidgets.QWidgetItem):
+                #print("widget" + str(item))
+                item.widget().close()
+                # or
+                # item.widget().setParent(None)
+            elif isinstance(item, QtWidgets.QSpacerItem):
+                #print("spacer " + str(item))
+                # no need to do extra stuff
+                pass
+            else:
+                #print("layout " + str(item))
+                self.clearLayout(item.layout())
+            # remove the item from layout
+            layout.removeItem(item)
+
+    def clear(self):
+        self._itemList.clear()
+        self.clearLayout(self.vContent_layout)
+
+
 class LabelSelectDialog(QtWidgets.QDialog):
     def __init__(
         self,
@@ -276,9 +439,11 @@ class LabelSelectDialog(QtWidgets.QDialog):
         bb.rejected.connect(self.reject)
 
         layout.addWidget(bb)
+
         # label_list
-        self.labelList = QtWidgets.QListWidget()
-        if self._fit_to_content["row"]:
+        self.labelList = DlgLabelListWidget(self)
+        """
+         if self._fit_to_content["row"]:
             self.labelList.setHorizontalScrollBarPolicy(
                 QtCore.Qt.ScrollBarAlwaysOff
             )
@@ -286,8 +451,11 @@ class LabelSelectDialog(QtWidgets.QDialog):
             self.labelList.setVerticalScrollBarPolicy(
                 QtCore.Qt.ScrollBarAlwaysOff
             )
+        """
 
-        self.labelList.currentItemChanged.connect(self.labelSelected)
+        #self.labelList.currentItemChanged.connect(self.labelSelected)
+        # self.labelList.itemSelectionChanged.connect(self.labelItemSelected)
+
         self.edit.setListWidget(self.labelList)
         layout.addWidget(self.labelList)
         # label_flags
@@ -311,6 +479,18 @@ class LabelSelectDialog(QtWidgets.QDialog):
         if txt is not None and txt != "":
             self.edit.setText(txt)
 
+    def labelItemSelected(self, pitem):
+        #item = self.labelList.currentItem()
+        if pitem is None:
+            return
+        try:
+            txt = pitem["label"]
+        except:
+            txt = ""
+
+        if txt is not None and txt != "":
+            self.edit.setText(txt)
+
     def validate(self):
         text = self.edit.text()
         text = self.deleteStrip(text)
@@ -325,19 +505,23 @@ class LabelSelectDialog(QtWidgets.QDialog):
         else:
             text = text.trimmed()
 
+        temp = []
         if text == "":
             self.labelList.clear()
             for pitem in self._list_items:
-                lbtxt = pitem["label"]
-                lbtxt = self.deleteStrip(lbtxt)
-                self.labelList.addItem(lbtxt)
+                temp.append(pitem)
+
+            if len(temp) > 0:
+                self.labelList.addItems(temp)
         else:
             self.labelList.clear()
             for pitem in self._list_items:
                 lbtxt = pitem["label"]
                 lbtxt = self.deleteStrip(lbtxt)
                 if lbtxt.find(text) > -1:
-                    self.labelList.addItem(lbtxt)
+                    temp.append(pitem)
+            if len(temp) > 0:
+                self.labelList.addItems(temp)
         self.edit.setText("")
 
 
@@ -346,9 +530,14 @@ class LabelSelectDialog(QtWidgets.QDialog):
         self._list_items = items[:]
         #self._curSelectedText = ""
         self.labelList.clear()
+        self.labelList.addItems(items)
+        """
         for pitem in items:
             lb = pitem["label"]
-            self.labelList.addItem(lb)
+            color = pitem["color"]
+            label_list_item = dlgLabelListWidgetItem(text, shap)
+            self.labelList.addItem(label_list_item)
+        """
         if self.exec_():
             color = "cyan"
             text = self.edit.text()
