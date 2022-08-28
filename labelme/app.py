@@ -1709,14 +1709,15 @@ class MainWindow(QtWidgets.QMainWindow):
         if len(items) < 1:
             self.canvas.shapes.pop()
             self.canvas.repaint()
-            return self.errorMessage(self.tr("Wrong Empty label"), self.tr("please select one polygon label"))
+            return self.errorMessage(self.tr("Wrong Empty label"), self.tr("please select one grade for label in Grade list"))
 
         text = None
         flags = {}
         group_id = None
+        color = None
         if self._config["display_label_popup"]:
             previous_text = self.labelDialog.edit.text()
-            text, color = self.labelDialog.popUpItems(items)
+            text, color = self.labelDialog.popUpLabelDlg(items)
             if not text:
                 self.labelDialog.edit.setText(previous_text)
 
@@ -1730,9 +1731,8 @@ class MainWindow(QtWidgets.QMainWindow):
             text = ""
         if text:
             # self.labelList.clearSelection()
-            shape = self.canvas.setLastLabel(text, flags)
+            shape = self.canvas.setLastLabel(text, flags, color)
             shape.group_id = group_id
-
             self.addLabel(shape)
             self.actions.editMode.setEnabled(True)
             self.actions.undoLastPoint.setEnabled(False)
@@ -2510,7 +2510,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 items = jsstr['items']
                 # print("labels is ", items)
                 if len(items):
-                    # self.labelList.addRows(items)
+                    #self.labelList.addRows(items)
                     self._polyonList.clear()
                     self._polyonList = items
             else:

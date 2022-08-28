@@ -195,7 +195,7 @@ class RowWidgetItem(QtWidgets.QWidget):
             color_txt = item["color"]
 
         if not color_txt or "" == color_txt:
-            color_txt = "red"
+            color_txt = "cyan"
 
         color_label.setText("")
         color_label.setStyleSheet("QLabel{border: 1px soild #aaa; border-radius: 7px; background: %s;}" % color_txt)

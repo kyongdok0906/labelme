@@ -254,8 +254,6 @@ class LabelSelectDialog(QtWidgets.QDialog):
         super(LabelSelectDialog, self).__init__(parent)
 
         self._app = parent  # add ckd
-        self._curSelectedText = ""
-        self._state = "s"
         self._list_items = []
 
         self.edit = LabelQLineEdit()
@@ -295,8 +293,10 @@ class LabelSelectDialog(QtWidgets.QDialog):
         # label_flags
         flags = {}
         self._flags = flags
+        """
         self.flagsLayout = QtWidgets.QVBoxLayout()
         layout.addItem(self.flagsLayout)
+        """
         self.setLayout(layout)
 
     def labelSelected(self, pitem):
@@ -309,15 +309,11 @@ class LabelSelectDialog(QtWidgets.QDialog):
             txt = ""
 
         if txt is not None and txt != "":
-            #self._curSelectedText = txt
             self.edit.setText(txt)
 
     def validate(self):
         text = self.edit.text()
-        if hasattr(text, "strip"):
-            text = text.strip()
-        else:
-            text = text.trimmed()
+        text = self.deleteStrip(text)
         if text:
             self.accept()
 
@@ -333,27 +329,19 @@ class LabelSelectDialog(QtWidgets.QDialog):
             self.labelList.clear()
             for pitem in self._list_items:
                 lbtxt = pitem["label"]
-                if hasattr(lbtxt, "strip"):
-                    lbtxt = lbtxt.strip()
-                else:
-                    lbtxt = lbtxt.trimmed()
-
+                lbtxt = self.deleteStrip(lbtxt)
                 self.labelList.addItem(lbtxt)
         else:
             self.labelList.clear()
             for pitem in self._list_items:
                 lbtxt = pitem["label"]
-                if hasattr(lbtxt, "strip"):
-                    lbtxt = lbtxt.strip()
-                else:
-                    lbtxt = lbtxt.trimmed()
-
+                lbtxt = self.deleteStrip(lbtxt)
                 if lbtxt.find(text) > -1:
                     self.labelList.addItem(lbtxt)
         self.edit.setText("")
 
 
-    def popUpItems(self, items):
+    def popUpLabelDlg(self, items):
         self._list_items.clear()
         self._list_items = items[:]
         #self._curSelectedText = ""
@@ -362,7 +350,30 @@ class LabelSelectDialog(QtWidgets.QDialog):
             lb = pitem["label"]
             self.labelList.addItem(lb)
         if self.exec_():
-            color = "red"
-            return self.edit.text(), color
+            color = "cyan"
+            text = self.edit.text()
+            text = self.deleteStrip(text)
+            color = self.colorOfitem(text)
+            return text, color
         else:
-            return None, ""
+            return None, "cyan"
+
+    def colorOfitem(self, txt):
+        if len(self._list_items) < 1:
+            return "cyan"
+        txt = self.deleteStrip(txt)
+        for pitem in self._list_items:
+            lb = pitem["label"]
+            dtxt = self.deleteStrip(lb)
+            if txt == dtxt:
+                return pitem["color"]
+
+
+    def deleteStrip(self, txt):
+        if txt is None or txt == "":
+            return ""
+        if hasattr(txt, "strip"):
+            text = txt.strip()
+        else:
+            text = txt.trimmed()
+        return text
