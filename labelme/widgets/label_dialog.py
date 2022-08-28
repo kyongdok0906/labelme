@@ -19,13 +19,13 @@ QT5 = QT_VERSION[0] == "5"
 class LabelQLineEdit(QtWidgets.QLineEdit):
     def setListWidget(self, list_widget):
         self.list_widget = list_widget
-
+    """
     def keyPressEvent(self, e):
         if e.key() in [QtCore.Qt.Key_Up, QtCore.Qt.Key_Down]:
             self.list_widget.keyPressEvent(e)
         else:
             super(LabelQLineEdit, self).keyPressEvent(e)
-
+    """
 
 
 class LabelDialog(QtWidgets.QDialog):
@@ -244,40 +244,27 @@ class LabelSelectDialog(QtWidgets.QDialog):
         self,
         text="",
         parent=None,
-        labels=None,
-        sort_labels=True,
         show_text_field=True,
-        completion="startswith",
         fit_to_content=None,
-        flags=None,
     ):
 
         if fit_to_content is None:
             fit_to_content = {"row": False, "column": True}
         self._fit_to_content = fit_to_content
         super(LabelSelectDialog, self).__init__(parent)
+
         self._app = parent  # add ckd
-        self._list_items = []
         self._curSelectedText = ""
         self._state = "s"
+        self._list_items = []
 
         self.edit = LabelQLineEdit()
         self.edit.setPlaceholderText(text)
-        # self.edit.setValidator(labelme.utils.labelValidator())
-        self.edit.editingFinished.connect(self.postProcess)
-        if flags:
-            self.edit.textChanged.connect(self.updateFlags)
-
-        self.edit_group_id = QtWidgets.QLineEdit()
-        self.edit_group_id.setPlaceholderText("Group ID")
-        self.edit_group_id.setValidator(
-            QtGui.QRegExpValidator(QtCore.QRegExp(r"\d*"), None)
-        )
+        self.edit.returnPressed.connect(self.searchProcess)
         layout = QtWidgets.QVBoxLayout()
         if show_text_field:
             layout_edit = QtWidgets.QHBoxLayout()
             layout_edit.addWidget(self.edit, 6)
-            layout_edit.addWidget(self.edit_group_id, 2)
             layout.addLayout(layout_edit)
         # buttons
         self.buttonBox = bb = QtWidgets.QDialogButtonBox(
@@ -289,6 +276,7 @@ class LabelSelectDialog(QtWidgets.QDialog):
         bb.button(bb.Cancel).setIcon(labelme.utils.newIcon("undo"))
         bb.accepted.connect(self.validate)
         bb.rejected.connect(self.reject)
+
         layout.addWidget(bb)
         # label_list
         self.labelList = QtWidgets.QListWidget()
@@ -300,91 +288,41 @@ class LabelSelectDialog(QtWidgets.QDialog):
             self.labelList.setVerticalScrollBarPolicy(
                 QtCore.Qt.ScrollBarAlwaysOff
             )
-        self._sort_labels = sort_labels
-        if labels:
-            self.labelList.addItems(labels)
-        if self._sort_labels:
-            self.labelList.sortItems()
-        else:
-            self.labelList.setDragDropMode(
-                QtWidgets.QAbstractItemView.InternalMove
-            )
+
         self.labelList.currentItemChanged.connect(self.labelSelected)
-        self.labelList.itemDoubleClicked.connect(self.labelDoubleClicked)
         self.edit.setListWidget(self.labelList)
         layout.addWidget(self.labelList)
         # label_flags
-        if flags is None:
-            flags = {}
+        flags = {}
         self._flags = flags
         self.flagsLayout = QtWidgets.QVBoxLayout()
-        self.resetFlags()
         layout.addItem(self.flagsLayout)
-        # self.edit.textChanged.connect(self.updateFlags)
         self.setLayout(layout)
-        # completion
-        """
-        completer = QtWidgets.QCompleter()
-        if not QT5 and completion != "startswith":
-            logger.warn(
-                "completion other than 'startswith' is only "
-                "supported with Qt5. Using 'startswith'"
-            )
-            completion = "startswith"
-        if completion == "startswith":
-            completer.setCompletionMode(QtWidgets.QCompleter.InlineCompletion)
-            # Default settings.
-            # completer.setFilterMode(QtCore.Qt.MatchStartsWith)
-        elif completion == "contains":
-            completer.setCompletionMode(QtWidgets.QCompleter.PopupCompletion)
-            completer.setFilterMode(QtCore.Qt.MatchContains)
-        else:
-            raise ValueError("Unsupported completion: {}".format(completion))
-        completer.setModel(self.labelList.model())
-        self.edit.setCompleter(completer)
-        """
-
-
-    def addLabelHistory(self, label):
-        if self.labelList.findItems(label, QtCore.Qt.MatchExactly):
-            return
-        self.labelList.addItem(label)
-        if self._sort_labels:
-            self.labelList.sortItems()
-
-    def labelSelected_org(self, item):
-        self.edit.setText(item.text())
 
     def labelSelected(self, pitem):
-        print(pitem)
         #item = self.labelList.currentItem()
+        if pitem is None:
+            return
         try:
             txt = pitem.text()
         except:
             txt = ""
 
         if txt is not None and txt != "":
-            self._curSelectedText = txt
-        self._state = ""
-        # self.edit.setText(item.text())
+            #self._curSelectedText = txt
+            self.edit.setText(txt)
 
     def validate(self):
-        if self._state == "s":
-            return
-        text = self._curSelectedText
+        text = self.edit.text()
         if hasattr(text, "strip"):
             text = text.strip()
         else:
             text = text.trimmed()
         if text:
-            self._curSelectedText = ""
             self.accept()
 
-    def labelDoubleClicked(self, item):
-        self.validate()
 
-    def postProcess(self):
-        self._state = "s"
+    def searchProcess(self):
         text = self.edit.text()
         if hasattr(text, "strip"):
             text = text.strip()
@@ -394,7 +332,7 @@ class LabelSelectDialog(QtWidgets.QDialog):
         if text == "":
             self.labelList.clear()
             for pitem in self._list_items:
-                lbtxt = pitem._data["label"]
+                lbtxt = pitem["label"]
                 if hasattr(lbtxt, "strip"):
                     lbtxt = lbtxt.strip()
                 else:
@@ -404,7 +342,7 @@ class LabelSelectDialog(QtWidgets.QDialog):
         else:
             self.labelList.clear()
             for pitem in self._list_items:
-                lbtxt = pitem._data["label"]
+                lbtxt = pitem["label"]
                 if hasattr(lbtxt, "strip"):
                     lbtxt = lbtxt.strip()
                 else:
@@ -412,98 +350,19 @@ class LabelSelectDialog(QtWidgets.QDialog):
 
                 if lbtxt.find(text) > -1:
                     self.labelList.addItem(lbtxt)
+        self.edit.setText("")
 
-
-    def updateFlags(self, label_new):
-        # keep state of shared flags
-        flags_old = self.getFlags()
-
-        flags_new = {}
-        for pattern, keys in self._flags.items():
-            if re.match(pattern, label_new):
-                for key in keys:
-                    flags_new[key] = flags_old.get(key, False)
-        self.setFlags(flags_new)
-
-    def deleteFlags(self):
-        for i in reversed(range(self.flagsLayout.count())):
-            item = self.flagsLayout.itemAt(i).widget()
-            self.flagsLayout.removeWidget(item)
-            item.setParent(None)
-
-    def resetFlags(self, label=""):
-        flags = {}
-        for pattern, keys in self._flags.items():
-            if re.match(pattern, label):
-                for key in keys:
-                    flags[key] = False
-        self.setFlags(flags)
-
-    def setFlags(self, flags):
-        self.deleteFlags()
-        for key in flags:
-            item = QtWidgets.QCheckBox(key, self)
-            item.setChecked(flags[key])
-            self.flagsLayout.addWidget(item)
-            item.show()
-
-    def getFlags(self):
-        flags = {}
-        for i in range(self.flagsLayout.count()):
-            item = self.flagsLayout.itemAt(i).widget()
-            flags[item.text()] = item.isChecked()
-        return flags
-
-    def getGroupId(self):
-        group_id = self.edit_group_id.text()
-        if group_id:
-            return int(group_id)
-        return None
-
-    def popUp(self, text=None, move=True, flags=None, group_id=None):
-        if self._fit_to_content["row"]:
-            self.labelList.setMinimumHeight(
-                self.labelList.sizeHintForRow(0) * self.labelList.count() + 2
-            )
-        if self._fit_to_content["column"]:
-            self.labelList.setMinimumWidth(
-                self.labelList.sizeHintForColumn(0) + 2
-            )
-        # if text is None, the previous label in self.edit is kept
-        if text is None:
-            text = self.edit.text()
-        if flags:
-            self.setFlags(flags)
-        else:
-            self.resetFlags(text)
-        self.edit.setText(text)
-        self.edit.setSelection(0, len(text))
-        if group_id is None:
-            self.edit_group_id.clear()
-        else:
-            self.edit_group_id.setText(str(group_id))
-        items = self.labelList.findItems(text, QtCore.Qt.MatchFixedString)
-        if items:
-            if len(items) != 1:
-                logger.warning("Label list has duplicate '{}'".format(text))
-            self.labelList.setCurrentItem(items[0])
-            row = self.labelList.row(items[0])
-            self.edit.completer().setCurrentRow(row)
-        self.edit.setFocus(QtCore.Qt.PopupFocusReason)
-        if move:
-            self.move(QtGui.QCursor.pos())
-        if self.exec_():
-            return self.edit.text(), self.getFlags(), self.getGroupId()
-        else:
-            return None, None, None
 
     def popUpItems(self, items):
         self._list_items.clear()
         self._list_items = items[:]
+        #self._curSelectedText = ""
+        self.labelList.clear()
         for pitem in items:
-            lb = pitem._data["label"]
+            lb = pitem["label"]
             self.labelList.addItem(lb)
         if self.exec_():
-            return self._curSelectedText, self.getFlags(), self.getGroupId()
+            color = "red"
+            return self.edit.text(), color
         else:
-            return None, None, None
+            return None, ""

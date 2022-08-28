@@ -85,6 +85,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if config is None:
             config = get_config()
         self._config = config
+        self._polyonList = []
 
         # set default shape colors
         Shape.line_color = QtGui.QColor(*self._config["shape"]["line_color"])
@@ -133,12 +134,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.labelDialog = LabelSelectDialog(
             text=self.tr("Enter Label for searching"),
             parent=self,
-            labels=self._config["labels"],
-            sort_labels=self._config["sort_labels"],
             show_text_field=self._config["show_label_text_field"],
-            completion=self._config["label_completion"],
             fit_to_content=self._config["fit_to_content"],
-            flags=self._config["label_flags"],
         )
 
         # flags part after delete
@@ -1708,7 +1705,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def newShape(self):
-        items = self.labelList.getItems()
+        items = self._polyonList[:]
         if len(items) < 1:
             self.canvas.shapes.pop()
             self.canvas.repaint()
@@ -1718,8 +1715,8 @@ class MainWindow(QtWidgets.QMainWindow):
         flags = {}
         group_id = None
         if self._config["display_label_popup"]:
-            previous_text = self.labelDialog._curSelectedText
-            text, flags, group_id = self.labelDialog.popUpItems(items)
+            previous_text = self.labelDialog.edit.text()
+            text, color = self.labelDialog.popUpItems(items)
             if not text:
                 self.labelDialog.edit.setText(previous_text)
 
@@ -2513,7 +2510,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 items = jsstr['items']
                 # print("labels is ", items)
                 if len(items):
-                    self.labelList.addRows(items)
+                    # self.labelList.addRows(items)
+                    self._polyonList.clear()
+                    self._polyonList = items
             else:
                 return QtWidgets.QMessageBox.critical(
                     self, "Error", "<p><b>%s</b></p>%s" % ("Error", jsstr['message'])
