@@ -154,7 +154,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # grades part ckd
         self.selected_grade = None
         self.grades_dock = self.grades_widget = None
-        self.grades_dock = QtWidgets.QDockWidget(self.tr("Grades (Total %s)" % 0), self)
+        self.grades_dock = QtWidgets.QDockWidget(self.tr("Grades"), self)
         self.grades_dock.setObjectName("grades")
         self.grade_title_bar = DockInPutTitleBar(self.grades_dock, "gradesbar", self)
         self.grades_dock.setTitleBarWidget(self.grade_title_bar)
@@ -167,7 +167,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # products part ckd
         self.selected_product = None
         self.products_dock = self.products_widget = None
-        self.products_dock = QtWidgets.QDockWidget(self.tr("Products (Total %s)" % 0), self)
+        self.products_dock = QtWidgets.QDockWidget(self.tr("Products"), self)
         self.products_dock.setObjectName("products")
         self.products_title_bar = DockInPutTitleBar(self.products_dock, "productsbar", self)
         self.products_dock.setTitleBarWidget(self.products_title_bar)
@@ -188,7 +188,7 @@ class MainWindow(QtWidgets.QMainWindow):
         #self.labelList.itemChanged.connect(self.labelItemChanged)
         #self.labelList.itemDropped.connect(self.labelOrderChanged)
         self.shape_dock = QtWidgets.QDockWidget(
-            self.tr("Polygon Labels (Total %s)" % 0), self
+            self.tr("Polygon Labels"), self
 
         )
         self.shape_dock.setObjectName("Labels")

@@ -19,6 +19,10 @@ class DockInPutTitleBar(QtWidgets.QWidget):
         boxLayout.setContentsMargins(1, 1, 1, 1)
 
         self.titleLabel = QLabel(self)
+        if self._bartype == "gradesbar":
+            self.titleLabel.setText(self.tr("Grades (Total %s)" % 0))
+        if self._bartype == "productsbar":
+            self.titleLabel.setText(self.tr("Products (Total %s)" % 0))
 
         self.hidnBtn = QtWidgets.QPushButton(self)
         self.hidnBtn.setText('.')
@@ -88,7 +92,7 @@ class DockInPutTitleBar(QtWidgets.QWidget):
         dockWidget.featuresChanged.connect(self.onFeaturesChanged)
 
         self.onFeaturesChanged(dockWidget.features())
-        self.setTitle(dockWidget.windowTitle())
+        # self.setTitle(dockWidget.windowTitle())
 
         dockWidget.installEventFilter(self)
 
@@ -185,12 +189,12 @@ class DockCheckBoxTitleBar(QtWidgets.QWidget):
         self._app = app
         #self.signal = Signal()
         #self.signal.polygon_check_signal.connect(self.polygon_label_status)
-
         boxLayout = QHBoxLayout(self)
         boxLayout.setSpacing(1)
         boxLayout.setContentsMargins(1, 1, 1, 1)
 
         self.titleLabel = QLabel(self)
+        self.titleLabel.setText(self.tr("Polygon Labels (Total %s)" % 0))
 
         self.hidnBtn = QtWidgets.QPushButton(self)
         self.hidnBtn.setText('')
@@ -230,10 +234,11 @@ class DockCheckBoxTitleBar(QtWidgets.QWidget):
         dockWidget.featuresChanged.connect(self.onFeaturesChanged)
 
         self.onFeaturesChanged(dockWidget.features())
-        self.setTitle(dockWidget.windowTitle())
+        #self.setTitle(dockWidget.windowTitle())
 
         dockWidget.installEventFilter(self)
         self.setContentsMargins(0, 3, 0, 5)
+        # self.setStyleSheet("QWidget { background: rgb(222, 222, 222); }")
 
     def eventFilter(self, source, event):
         #if event.type() == QEvent.WindowTitleChange:
