@@ -259,9 +259,9 @@ class DlgRowWidgetItem(QtWidgets.QWidget):
         color_label = QtWidgets.QLabel(self)
 
         try:
-            color_txt = item["COLOR"]
-        except:
             color_txt = item["color"]
+        except:
+            color_txt = item["COLOR"]
 
         if not color_txt or "" == color_txt:
             color_txt = "cyan"
@@ -314,12 +314,11 @@ class DlgRowWidgetItem(QtWidgets.QWidget):
             self._selected = False
 
 
-class DlgLabelListWidget(QtWidgets.QWidget):
+class SearchLabelListWidget(QtWidgets.QWidget):
     def __init__(self, parent):
-        super(DlgLabelListWidget, self).__init__()
+        super(SearchLabelListWidget, self).__init__()
         self._selected_item = None
         self._itemList = []
-        self._model = False
         self._parent = parent
 
         self.vContent_layout = QtWidgets.QVBoxLayout(self)
@@ -353,7 +352,19 @@ class DlgLabelListWidget(QtWidgets.QWidget):
             rowItem = DlgRowWidgetItem(items[it], self)
             self.vContent_layout.addWidget(rowItem)
             self._itemList.append(rowItem)
-        self._model = True
+
+    def addItem(self, item):
+        if item:
+            rowItem = DlgRowWidgetItem(item, self)
+            self.vContent_layout.addWidget(rowItem)
+            self._itemList.append(rowItem)
+
+    def findItems(self, item):
+        for it in self._itemList:
+            #lb = it._data["label"]
+            if it._data["label"] == item["label"]:
+                return True
+        return False
 
     def mousePressEventHandle(self, event, pdata):
         # print("list row click")
@@ -377,7 +388,7 @@ class DlgLabelListWidget(QtWidgets.QWidget):
     def getDataSelectedItem(self):
         if self._selected_item is not None:
             return self._selected_item._data
-        return ""
+        return None
 
     def clearLayout(self, layout):
         for i in reversed(range(layout.count())):
@@ -402,7 +413,7 @@ class DlgLabelListWidget(QtWidgets.QWidget):
         self.clearLayout(self.vContent_layout)
 
 
-class LabelSelectDialog(QtWidgets.QDialog):
+class LabelSearchDialog(QtWidgets.QDialog):
     def __init__(
         self,
         text="",
@@ -414,7 +425,7 @@ class LabelSelectDialog(QtWidgets.QDialog):
         if fit_to_content is None:
             fit_to_content = {"row": False, "column": True}
         self._fit_to_content = fit_to_content
-        super(LabelSelectDialog, self).__init__(parent)
+        super(LabelSearchDialog, self).__init__(parent)
 
         self._app = parent  # add ckd
         self._list_items = []
@@ -441,7 +452,7 @@ class LabelSelectDialog(QtWidgets.QDialog):
         layout.addWidget(bb)
 
         # label_list
-        self.labelList = DlgLabelListWidget(self)
+        self.labelList = SearchLabelListWidget(self)
         """
          if self._fit_to_content["row"]:
             self.labelList.setHorizontalScrollBarPolicy(
@@ -452,8 +463,6 @@ class LabelSelectDialog(QtWidgets.QDialog):
                 QtCore.Qt.ScrollBarAlwaysOff
             )
         """
-
-        #self.labelList.currentItemChanged.connect(self.labelSelected)
         # self.labelList.itemSelectionChanged.connect(self.labelItemSelected)
 
         self.edit.setListWidget(self.labelList)
@@ -466,18 +475,6 @@ class LabelSelectDialog(QtWidgets.QDialog):
         layout.addItem(self.flagsLayout)
         """
         self.setLayout(layout)
-
-    def labelSelected(self, pitem):
-        #item = self.labelList.currentItem()
-        if pitem is None:
-            return
-        try:
-            txt = pitem.text()
-        except:
-            txt = ""
-
-        if txt is not None and txt != "":
-            self.edit.setText(txt)
 
     def labelItemSelected(self, pitem):
         #item = self.labelList.currentItem()
@@ -500,11 +497,7 @@ class LabelSelectDialog(QtWidgets.QDialog):
 
     def searchProcess(self):
         text = self.edit.text()
-        if hasattr(text, "strip"):
-            text = text.strip()
-        else:
-            text = text.trimmed()
-
+        text = self.deleteStrip(text)
         temp = []
         if text == "":
             self.labelList.clear()
@@ -535,17 +528,17 @@ class LabelSelectDialog(QtWidgets.QDialog):
         for pitem in items:
             lb = pitem["label"]
             color = pitem["color"]
-            label_list_item = dlgLabelListWidgetItem(text, shap)
+            label_list_item = SearchLabelListWidget(text, shap)
             self.labelList.addItem(label_list_item)
         """
         if self.exec_():
-            color = "cyan"
-            text = self.edit.text()
-            text = self.deleteStrip(text)
-            color = self.colorOfitem(text)
-            return text, color
+            item = self.labelList.getDataSelectedItem()
+            if item:
+                return item
+            else:
+                return None
         else:
-            return None, "cyan"
+            return None
 
     def colorOfitem(self, txt):
         if len(self._list_items) < 1:
@@ -566,3 +559,9 @@ class LabelSelectDialog(QtWidgets.QDialog):
         else:
             text = txt.trimmed()
         return text
+
+    def addLabelHistory(self, item):
+        if self.labelList.findItems(item):
+            return
+
+        self.labelList.addItem(item)

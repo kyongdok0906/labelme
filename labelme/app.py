@@ -33,7 +33,7 @@ from labelme.widgets import BrightnessContrastDialog
 from labelme.widgets import Canvas
 from labelme.widgets import FileDialogPreview
 from labelme.widgets import LabelDialog
-from labelme.widgets import LabelSelectDialog
+from labelme.widgets import LabelSearchDialog
 from labelme.widgets import LabelListWidget
 from labelme.widgets import LabelListWidgetItem
 from labelme.widgets import ToolBar
@@ -131,7 +131,7 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         """
 
-        self.labelDialog = LabelSelectDialog(
+        self.labelDialog = LabelSearchDialog(
             text=self.tr("Enter Label for searching"),
             parent=self,
             show_text_field=self._config["show_label_text_field"],
@@ -1410,9 +1410,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.canvas.selectedShapes = selected_shapes
         for shape in self.canvas.selectedShapes:
             shape.selected = True
-            item = self.labelList.findItemByShape(shape)
-            self.labelList.selectItem(item)
-            self.labelList.scrollToItem(item)
+            #item = self.labelList.findItemByShape(shape)
+            #ckd
+            #self.labelList.selectItem(item)
+            #self.labelList.scrollToItem(item)
         self._noSelectionSlot = False
         n_selected = len(selected_shapes)
         self.actions.delete.setEnabled(n_selected)
@@ -1421,29 +1422,34 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actions.edit.setEnabled(n_selected == 1)
 
     def addLabel(self, shape):
+        """
         if shape.group_id is None:
             text = shape.label
         else:
-            text = "{} ({})".format(shape.label, shape.group_id)
+            text = "{} ({})".format(shape.other_data["label"], shape.group_id)
         label_list_item = LabelListWidgetItem(text, shape)
-        return  # ckd
-        self.labelList.addItem(label_list_item)
+        """
+        self.labelList.addItem(shape.other_data)
+        """
         if not self.uniqLabelList.findItemsByLabel(shape.label):
             item = self.uniqLabelList.createItemFromLabel(shape.label)
             self.uniqLabelList.addItem(item)
             rgb = self._get_rgb_by_label(shape.label)
             self.uniqLabelList.setItemLabel(item, shape.label, rgb)
-        self.labelDialog.addLabelHistory(shape.label)
+        """
+        self.labelDialog.addLabelHistory(shape.other_data)
         for action in self.actions.onShapesPresent:
             action.setEnabled(True)
 
-        self._update_shape_color(shape)
+        #self._update_shape_color(shape)
+
+        """
         label_list_item.setText(
             '{} <font color="#{:02x}{:02x}{:02x}">●</font>'.format(
                 html.escape(text), *shape.fill_color.getRgb()[:3]
             )
         )
-
+        """
     def _update_shape_color(self, shape):
         r, g, b = self._get_rgb_by_label(shape.label)
         shape.line_color = QtGui.QColor(r, g, b)
@@ -1711,27 +1717,28 @@ class MainWindow(QtWidgets.QMainWindow):
             self.canvas.repaint()
             return self.errorMessage(self.tr("Wrong Empty label"), self.tr("please select one grade for label in Grade list"))
 
-        text = None
         flags = {}
         group_id = None
-        color = None
+        item = None
         if self._config["display_label_popup"]:
             previous_text = self.labelDialog.edit.text()
-            text, color = self.labelDialog.popUpLabelDlg(items)
-            if not text:
+            item = self.labelDialog.popUpLabelDlg(items)
+            if not item:
                 self.labelDialog.edit.setText(previous_text)
 
-        if text and not self.validateLabel(text):
+        if item and not self.validateLabel(item["label"]):
             self.errorMessage(
                 self.tr("Invalid label"),
                 self.tr("Invalid label '{}' with validation type '{}'").format(
-                    text, self._config["validate_label"]
+                    item["label"], self._config["validate_label"]
                 ),
             )
-            text = ""
-        if text:
-            # self.labelList.clearSelection()
-            shape = self.canvas.setLastLabel(text, flags, color)
+            item = None
+        if item:
+            self.labelList.clearSelection()
+            cnt = self.labelList.getCountItems()
+            item["id"] = "%04d" % (cnt + 1)
+            shape = self.canvas.setLastLabel(item, flags)
             shape.group_id = group_id
             self.addLabel(shape)
             self.actions.editMode.setEnabled(True)
@@ -1831,8 +1838,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.brightnessContrast_values[self.filename] = (brightness, contrast)
 
     def togglePolygons(self, value):
-        for item in self.labelList:
-            item.setCheckState(Qt.Checked if value else Qt.Unchecked)
+        #for item in self.labelList:
+        #    item.setCheckState(Qt.Checked if value else Qt.Unchecked)
+        self.labelList.showItems(value)
 
     def loadFile(self, filename=None):
         """Load the specified file, or the last opened file if None."""
@@ -2510,9 +2518,13 @@ class MainWindow(QtWidgets.QMainWindow):
                 items = jsstr['items']
                 # print("labels is ", items)
                 if len(items):
-                    #self.labelList.addRows(items)
+                    #self.labelList.addItems(items)
                     self._polyonList.clear()
-                    self._polyonList = items
+                    for i in range(len(items)):
+                        idx = "%04d" % (i+1)
+                        item = items[i]
+                        nitem = {"id": idx, "label": item["label"], "color": item["color"]}
+                        self._polyonList.append(nitem)
             else:
                 return QtWidgets.QMessageBox.critical(
                     self, "Error", "<p><b>%s</b></p>%s" % ("Error", jsstr['message'])

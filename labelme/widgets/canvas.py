@@ -820,14 +820,12 @@ class Canvas(QtWidgets.QWidget):
 
                 self.movingShape = False
 
-    def setLastLabel(self, text, flags, color=None):
-        assert text
-        self.shapes[-1].label = text
+    def setLastLabel(self, item, flags):
+        assert item
+        self.shapes[-1].label = item["label"]
         self.shapes[-1].flags = flags
-        if color is not None:
-            qc = QtGui.QColor(color)
-            # print(qc)
-            self.shapes[-1].line_color = qc
+        self.shapes[-1].other_data = item
+        self.shapes[-1].line_color = QtGui.QColor(item["color"])
 
         self.shapesBackups.pop()
         self.storeShapes()

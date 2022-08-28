@@ -204,6 +204,7 @@ class DockCheckBoxTitleBar(QtWidgets.QWidget):
 
         self.checkbox = QCheckBox(self)
         self.checkbox.stateChanged.connect(self.stateChangeHandle)
+        self.checkbox.setCheckState(Qt.Checked)
 
         self.dockButton = QToolButton(self)
         #self.dockButton.setIcon(QApplication.style().standardIcon(QStyle.SP_TitleBarNormalButton))
@@ -262,10 +263,12 @@ class DockCheckBoxTitleBar(QtWidgets.QWidget):
     def stateChangeHandle(self, state):
         if state == Qt.Checked:
             #self.signal.polygon_check_signal.emit(1)
-            self._app.labelList.showItems(True)
+            #self._app.labelList.showItems(True)
+            self._app.togglePolygons(True)
         else:
             #self.signal.polygon_check_signal.emit(0)
-            self._app.labelList.showItems(False)
+            #self._app.labelList.showItems(False)
+            self._app.togglePolygons(False)
 
     # receiver function signal
     def polygon_label_status(self, arg):
