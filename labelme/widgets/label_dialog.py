@@ -28,6 +28,7 @@ class LabelQLineEdit(QtWidgets.QLineEdit):
     """
 
 
+"""
 class LabelDialog(QtWidgets.QDialog):
     def __init__(
         self,
@@ -237,14 +238,15 @@ class LabelDialog(QtWidgets.QDialog):
             return self.edit.text(), self.getFlags(), self.getGroupId()
         else:
             return None, None, None
+"""
 
 
 class DlgRowWidgetItem(QtWidgets.QWidget):
-    _data = {}
+    _shape = {}
     _selected = False
 
-    def __init__(self, item, parent=None):
-        self._data = item
+    def __init__(self, shape, parent=None):
+        self._shape = shape
         self._parent = parent
 
         super(DlgRowWidgetItem, self).__init__()
@@ -253,15 +255,15 @@ class DlgRowWidgetItem(QtWidgets.QWidget):
         horizontal_layout.setContentsMargins(0, 0, 0, 0)
 
         label = QtWidgets.QLabel(self)
-        label.setText(item["label"])
+        label.setText(shape["label"])
         #label.setStyleSheet("QWidget { font-size: 12px; }")
 
         color_label = QtWidgets.QLabel(self)
 
         try:
-            color_txt = item["color"]
+            color_txt = shape["color"]
         except:
-            color_txt = item["COLOR"]
+            color_txt = shape["COLOR"]
 
         if not color_txt or "" == color_txt:
             color_txt = "cyan"
@@ -288,7 +290,11 @@ class DlgRowWidgetItem(QtWidgets.QWidget):
     def mousePressEvent(self, event):
         # print("row click")
         if self._parent is not None:
-            self._parent.mousePressEventHandle(event, self._data)
+            self._parent.mousePressEventHandle(event, self._shape)
+
+    def mouseDoubleClickEvent(self, event):
+        if self._parent is not None:
+            self._parent.mousePressEventHandle(event, self._shape, "duble")
 
     def changeBackground(self, state):
         if state is True:
@@ -341,15 +347,15 @@ class SearchLabelListWidget(QtWidgets.QWidget):
         hb_layout.setContentsMargins(0, 0, 0, 0)
         hb_layout.setSpacing(0)
         self.setLayout(hb_layout)
+        self.setMaximumHeight(300)
 
     def addItems(self, items):
         if len(items) < 1:
             return
 
         self.clear()
-
-        for it in range(len(items)):
-            rowItem = DlgRowWidgetItem(items[it], self)
+        for item in items:
+            rowItem = DlgRowWidgetItem(item, self)
             self.vContent_layout.addWidget(rowItem)
             self._itemList.append(rowItem)
 
@@ -359,18 +365,17 @@ class SearchLabelListWidget(QtWidgets.QWidget):
             self.vContent_layout.addWidget(rowItem)
             self._itemList.append(rowItem)
 
-    def findItems(self, item):
+    def findItems(self, shape):
         for it in self._itemList:
-            #lb = it._data["label"]
-            if it._data["label"] == item["label"]:
+            #lb = it._shape["label"]
+            if it._shape["label"] == shape.label:
                 return True
         return False
 
-    def mousePressEventHandle(self, event, pdata):
+    def mousePressEventHandle(self, event, shape, mode=None):
         # print("list row click")
-        for it in range(len(self._itemList)):
-            rowItem = self._itemList[it]
-            if rowItem._data == pdata:
+        for rowItem in self._itemList:
+            if rowItem._shape["label"] == shape["label"]:
                 rowItem.changeBackground(True)
                 rowItem._selected = True
                 self._selected_item = rowItem
@@ -378,16 +383,16 @@ class SearchLabelListWidget(QtWidgets.QWidget):
                 rowItem.changeBackground(False)
                 rowItem._selected = False
 
-        self._parent.labelItemSelected(pdata)
+        self._parent.labelItemSelected(shape, mode)
 
     def getSelectedItem(self):
         if self._selected_item is not None:
             return self._selected_item
         return None
 
-    def getDataSelectedItem(self):
+    def getShapeSelectedItem(self):
         if self._selected_item is not None:
-            return self._selected_item._data
+            return self._selected_item._shape
         return None
 
     def clearLayout(self, layout):
@@ -476,17 +481,19 @@ class LabelSearchDialog(QtWidgets.QDialog):
         """
         self.setLayout(layout)
 
-    def labelItemSelected(self, pitem):
+    def labelItemSelected(self, shape, mode=None):
         #item = self.labelList.currentItem()
-        if pitem is None:
+        if shape is None:
             return
         try:
-            txt = pitem["label"]
+            txt = shape["label"]
         except:
             txt = ""
 
         if txt is not None and txt != "":
             self.edit.setText(txt)
+        if mode is not None:
+            self.validate()
 
     def validate(self):
         text = self.edit.text()
@@ -501,18 +508,18 @@ class LabelSearchDialog(QtWidgets.QDialog):
         temp = []
         if text == "":
             self.labelList.clear()
-            for pitem in self._list_items:
-                temp.append(pitem)
+            for item in self._list_items:
+                temp.append(item)
 
             if len(temp) > 0:
                 self.labelList.addItems(temp)
         else:
             self.labelList.clear()
-            for pitem in self._list_items:
-                lbtxt = pitem["label"]
+            for item in self._list_items:
+                lbtxt = item["label"]
                 lbtxt = self.deleteStrip(lbtxt)
                 if lbtxt.find(text) > -1:
-                    temp.append(pitem)
+                    temp.append(item)
             if len(temp) > 0:
                 self.labelList.addItems(temp)
         self.edit.setText("")
@@ -532,9 +539,9 @@ class LabelSearchDialog(QtWidgets.QDialog):
             self.labelList.addItem(label_list_item)
         """
         if self.exec_():
-            item = self.labelList.getDataSelectedItem()
-            if item:
-                return item
+            shape = self.labelList.getShapeSelectedItem()
+            if shape:
+                return shape
             else:
                 return None
         else:
@@ -560,8 +567,8 @@ class LabelSearchDialog(QtWidgets.QDialog):
             text = txt.trimmed()
         return text
 
-    def addLabelHistory(self, item):
-        if self.labelList.findItems(item):
+    def addLabelHistory(self, shape):
+        if self.labelList.findItems(shape):
             return
 
         self.labelList.addItem(item)

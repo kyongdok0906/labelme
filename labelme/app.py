@@ -8,6 +8,7 @@ import os.path as osp
 import re
 import webbrowser
 import threading
+import copy
 # import ctypes
 
 import imgviz
@@ -32,7 +33,7 @@ from labelme.shape import Shape
 from labelme.widgets import BrightnessContrastDialog
 from labelme.widgets import Canvas
 from labelme.widgets import FileDialogPreview
-from labelme.widgets import LabelDialog
+#from labelme.widgets import LabelDialog
 from labelme.widgets import LabelSearchDialog
 from labelme.widgets import LabelListWidget
 from labelme.widgets import LabelListWidgetItem
@@ -118,8 +119,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._copied_shapes = None
 
         # Main widgets and related state.
-        """
-        
+        """        
         self.labelDialog = LabelDialog(
             parent=self,
             labels=self._config["labels"],
@@ -180,10 +180,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.labelList = CustomLabelListWidget(self)
         self.lastOpenDir = None
-        #self.labelList.itemSelectionChanged.connect(self.labelSelectionChanged)
+        self.labelList.itemSelectionChanged.connect(self.labelSelectionChanged)
+
         #self.labelList.itemDoubleClicked.connect(self.editLabel)
         #self.labelList.itemChanged.connect(self.labelItemChanged)
         #self.labelList.itemDropped.connect(self.labelOrderChanged)
+
         self.shape_dock = QtWidgets.QDockWidget(
             self.tr("Polygon Labels"), self
 
@@ -192,7 +194,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.customLabelTitleBar = DockCheckBoxTitleBar(self, self.shape_dock)
         self.shape_dock.setTitleBarWidget(self.customLabelTitleBar)
         self.shape_dock.setWidget(self.labelList)
-
         # top Tool area
         self.selected_shapType = None
         self.topToolWidget = topToolWidget("toptool", self)
@@ -200,6 +201,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.topToolbar_dock.setWidget(self.topToolWidget)
         self.topToolbar_dock.setTitleBarWidget(QtWidgets.QWidget())
         self.topToolWidget.setEnabled(False)
+
         """ old code
         self.labelList = LabelListWidget()
         self.lastOpenDir = None
@@ -293,16 +295,12 @@ class MainWindow(QtWidgets.QMainWindow):
             if self._config[dock]["show"] is False:
                 getattr(self, dock).setVisible(False)
 
+        self.addDockWidget(Qt.TopDockWidgetArea, self.topToolbar_dock)
         # self.addDockWidget(Qt.RightDockWidgetArea, self.flag_dock)
         self.addDockWidget(Qt.RightDockWidgetArea, self.grades_dock)
         self.addDockWidget(Qt.RightDockWidgetArea, self.products_dock)
         # self.addDockWidget(Qt.RightDockWidgetArea, self.label_dock)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.shape_dock)
         self.addDockWidget(Qt.RightDockWidgetArea, self.file_dock)
-
-        self.addDockWidget(Qt.TopDockWidgetArea, self.topToolbar_dock)
-
-
 
 
         # Actions
@@ -546,10 +544,10 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
         help = action(
-            self.tr("&Tutorial"),
+            self.tr("&Help"),
             self.tutorial,
             icon="help",
-            tip=self.tr("Show tutorial page"),
+            tip=self.tr("Show GitHub page"),
         )
         """
         lang_En = action(
@@ -739,7 +737,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Label list context menu.
         labelMenu = QtWidgets.QMenu()
-        utils.addActions(labelMenu, (edit, delete))
+        #utils.addActions(labelMenu, (edit, delete))
+        utils.addActions(labelMenu, (delete, ))
         self.labelList.setContextMenuPolicy(Qt.CustomContextMenu)
         self.labelList.customContextMenuRequested.connect(
             self.popLabelListMenu
@@ -1058,7 +1057,8 @@ class MainWindow(QtWidgets.QMainWindow):
     # Support Functions
 
     def noShapes(self):
-        return not len(self.labelList)
+        #return not len(self.labelList)
+        return not self.labelList.getCountItems()
 
     def populateModeActions(self):
         tool, menu = self.actions.tool, self.actions.menu
@@ -1148,7 +1148,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.statusBar().showMessage(message, delay)
 
     def resetState(self):
-        # self.labelList.clear()  # this block now when polygon list is deleted
+        self.labelList.clear()  # this block now when polygon list is deleted
         self.filename = None
         self.imagePath = None
         self.imageData = None
@@ -1178,7 +1178,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actions.undo.setEnabled(self.canvas.isShapeRestorable)
 
     def tutorial(self):
-        url = "https://github.com/wkentaro/labelme/tree/main/examples/tutorial"  # NOQA
+        url = "https://github.com/kingntop/labelme"  # NOQA
         webbrowser.open(url)
     """
     def changelangEn(self):
@@ -1242,6 +1242,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.actions.createLineMode.setEnabled(True)
             self.actions.createPointMode.setEnabled(True)
             self.actions.createLineStripMode.setEnabled(True)
+
+            self.topToolWidget.editmodeClick()
         else:
             if createMode == "polygon":
                 self.actions.createMode.setEnabled(False)
@@ -1250,6 +1252,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.actions.createLineMode.setEnabled(True)
                 self.actions.createPointMode.setEnabled(True)
                 self.actions.createLineStripMode.setEnabled(True)
+
+                self.topToolWidget.eventFromMenu(createMode)
             elif createMode == "rectangle":
                 self.actions.createMode.setEnabled(True)
                 self.actions.createRectangleMode.setEnabled(False)
@@ -1257,6 +1261,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.actions.createLineMode.setEnabled(True)
                 self.actions.createPointMode.setEnabled(True)
                 self.actions.createLineStripMode.setEnabled(True)
+
+                self.topToolWidget.eventFromMenu(createMode)
             elif createMode == "line":
                 self.actions.createMode.setEnabled(True)
                 self.actions.createRectangleMode.setEnabled(True)
@@ -1264,6 +1270,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.actions.createLineMode.setEnabled(False)
                 self.actions.createPointMode.setEnabled(True)
                 self.actions.createLineStripMode.setEnabled(True)
+
+                self.topToolWidget.eventFromMenu(createMode)
             elif createMode == "point":
                 self.actions.createMode.setEnabled(True)
                 self.actions.createRectangleMode.setEnabled(True)
@@ -1271,6 +1279,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.actions.createLineMode.setEnabled(True)
                 self.actions.createPointMode.setEnabled(False)
                 self.actions.createLineStripMode.setEnabled(True)
+
+                self.topToolWidget.eventFromMenu(createMode)
             elif createMode == "circle":
                 self.actions.createMode.setEnabled(True)
                 self.actions.createRectangleMode.setEnabled(True)
@@ -1278,6 +1288,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.actions.createLineMode.setEnabled(True)
                 self.actions.createPointMode.setEnabled(True)
                 self.actions.createLineStripMode.setEnabled(True)
+
+                self.topToolWidget.eventFromMenu(createMode)
             elif createMode == "linestrip":
                 self.actions.createMode.setEnabled(True)
                 self.actions.createRectangleMode.setEnabled(True)
@@ -1285,6 +1297,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.actions.createLineMode.setEnabled(True)
                 self.actions.createPointMode.setEnabled(True)
                 self.actions.createLineStripMode.setEnabled(False)
+
+                self.topToolWidget.eventFromMenu(createMode)
             else:
                 raise ValueError("Unsupported createMode: %s" % createMode)
         self.actions.editMode.setEnabled(not edit)
@@ -1325,8 +1339,9 @@ class MainWindow(QtWidgets.QMainWindow):
         return False
 
     def editLabel(self, item=None):
-        if item and not isinstance(item, LabelListWidgetItem):
-            raise TypeError("item must be LabelListWidgetItem type")
+        return  # it have to brock
+        if item and not isinstance(item, CustomLabelListWidget):
+            raise TypeError("item must be CustomLabelListWidget type")
 
         if not self.canvas.editing():
             return
@@ -1334,10 +1349,10 @@ class MainWindow(QtWidgets.QMainWindow):
             item = self.currentItem()
         if item is None:
             return
-        shape = item.shape()
+        shape = item._shape
         if shape is None:
             return
-        text, flags, group_id = self.labelDialog.popUp(
+        text, flags, group_id = self.labelDialog.popUpLabelDlg(
             text=shape.label,
             flags=shape.flags,
             group_id=shape.group_id,
@@ -1383,7 +1398,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if not items:
             return
         item = items[0]
-        print(str(item.text()))
+        #print(str(item.text()))
         self.selected_product = item.text()
 
     def fileSelectionChanged(self):
@@ -1410,9 +1425,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.canvas.selectedShapes = selected_shapes
         for shape in self.canvas.selectedShapes:
             shape.selected = True
-            #item = self.labelList.findItemByShape(shape)
-            #ckd
-            #self.labelList.selectItem(item)
+            item = self.labelList.findItemByShape(shape)
+            self.labelList.selectItem(item)
             #self.labelList.scrollToItem(item)
         self._noSelectionSlot = False
         n_selected = len(selected_shapes)
@@ -1429,7 +1443,7 @@ class MainWindow(QtWidgets.QMainWindow):
             text = "{} ({})".format(shape.other_data["label"], shape.group_id)
         label_list_item = LabelListWidgetItem(text, shape)
         """
-        self.labelList.addItem(shape.other_data)
+        self.labelList.addItem(shape)
         """
         if not self.uniqLabelList.findItemsByLabel(shape.label):
             item = self.uniqLabelList.createItemFromLabel(shape.label)
@@ -1437,11 +1451,11 @@ class MainWindow(QtWidgets.QMainWindow):
             rgb = self._get_rgb_by_label(shape.label)
             self.uniqLabelList.setItemLabel(item, shape.label, rgb)
         """
-        self.labelDialog.addLabelHistory(shape.other_data)
+        self.labelDialog.addLabelHistory(shape)
         for action in self.actions.onShapesPresent:
             action.setEnabled(True)
 
-        #self._update_shape_color(shape)
+        self._update_shape_color(shape)
 
         """
         label_list_item.setText(
@@ -1451,7 +1465,18 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         """
     def _update_shape_color(self, shape):
+        """
         r, g, b = self._get_rgb_by_label(shape.label)
+        shape.line_color = QtGui.QColor(r, g, b)
+        shape.vertex_fill_color = QtGui.QColor(r, g, b)
+        shape.hvertex_fill_color = QtGui.QColor(255, 255, 255)
+        shape.fill_color = QtGui.QColor(r, g, b, 128)
+        shape.select_line_color = QtGui.QColor(255, 255, 255)
+        shape.select_fill_color = QtGui.QColor(r, g, b, 155)
+        """
+        sc = shape.color if shape.color else "cyan"
+        Qc = QtGui.QColor(sc)
+        r, g, b = Qc.red(), Qc.green(), Qc.blue()
         shape.line_color = QtGui.QColor(r, g, b)
         shape.vertex_fill_color = QtGui.QColor(r, g, b)
         shape.hvertex_fill_color = QtGui.QColor(255, 255, 255)
@@ -1482,8 +1507,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def loadShapes(self, shapes, replace=True):
         self._noSelectionSlot = True
+        cnt = self.labelList.getCountItems() + 1
         for shape in shapes:
+            if replace is not True:
+                shape.id = "%04d" % cnt
             self.addLabel(shape)
+            if replace is not True:
+                cnt = cnt + 1
         self.labelList.clearSelection()
         self._noSelectionSlot = False
         self.canvas.loadShapes(shapes, replace=replace)
@@ -1543,6 +1573,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.products_widget.addItem(item)
         self.products_title_bar.titleLabel.setText(self.tr("Products (Total %s)" % self.products_widget.__len__()))
 
+    # no using now
     def LoadLabelByGrade(self, shape):
         if shape.group_id is None:
             text = shape.label
@@ -1595,9 +1626,9 @@ class MainWindow(QtWidgets.QMainWindow):
             )
             return data
 
-        shapes = [format_shape(item.shape()) for item in self.labelList]
+        shapes = [format_shape(item._shape) for item in self.labelList.getItems()]
         flags = {}
-        for i in range(self.flag_widget.count()):
+        for i in range(self.flag_widget.count()):  # no this part now
             item = self.flag_widget.item(i)
             key = item.text()
             flag = item.checkState() == Qt.Checked
@@ -1635,7 +1666,8 @@ class MainWindow(QtWidgets.QMainWindow):
             return False
 
     def duplicateSelectedShape(self):
-        added_shapes = self.canvas.duplicateSelectedShapes()
+        cnt = self.labelList.getCountItems()
+        added_shapes = self.canvas.duplicateSelectedShapes(cnt + 1)
         self.labelList.clearSelection()
         for shape in added_shapes:
             self.addLabel(shape)
@@ -1649,33 +1681,29 @@ class MainWindow(QtWidgets.QMainWindow):
         self._copied_shapes = [s.copy() for s in self.canvas.selectedShapes]
         self.actions.paste.setEnabled(len(self._copied_shapes) > 0)
 
-    def labelSelectionChanged(self):
+    def labelSelectionChanged(self, selecteds, deselecteds):
         if self._noSelectionSlot:
             return
         if self.canvas.editing():
             selected_shapes = []
             for item in self.labelList.selectedItems():
-                selected_shapes.append(item.shape())
+                selected_shapes.append(item._shape)
             if selected_shapes:
                 self.canvas.selectShapes(selected_shapes)
             else:
                 self.canvas.deSelectShape()
 
     def labelItemChanged(self, item):
-        shape = item.shape()
-        self.canvas.setShapeVisible(shape, item.checkState() == Qt.Checked)
+        shape = item._shape
+        self.canvas.setShapeVisible(shape, item._checked)
 
     def labelOrderChanged(self):
         self.setDirty()
-        self.canvas.loadShapes([item.shape() for item in self.labelList])
+        self.canvas.loadShapes([item._shape for item in self.labelList.getItems()])
 
     # Callback functions:
-
+    """
     def newShape_org(self):
-        """Pop-up and give focus to the label editor.
-
-        position MUST be in global coordinates.
-        """
         items = self.uniqLabelList.selectedItems()
         text = None
         if items:
@@ -1708,10 +1736,11 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.canvas.undoLastLine()
             self.canvas.shapesBackups.pop()
-
+    """
 
     def newShape(self):
-        items = self._polyonList[:]
+        #items = self._polyonList[:]
+        items = copy.deepcopy(self._polyonList)
         if len(items) < 1:
             self.canvas.shapes.pop()
             self.canvas.repaint()
@@ -2446,7 +2475,10 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 item.setCheckState(Qt.Unchecked)
             self.fileListWidget.addItem(item)
+
         self.openNextImg(load=load)
+        # print("{}".format(self.fileListWidget.count()))
+        self.file_dock.setWindowTitle(self.tr("File List (Total {})".format(self.fileListWidget.count())))
 
     def scanAllImages(self, folderPath):
         extensions = [
@@ -2523,7 +2555,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     for i in range(len(items)):
                         idx = "%04d" % (i+1)
                         item = items[i]
-                        nitem = {"id": idx, "label": item["label"], "color": item["color"]}
+                        nitem = {"id": "0", "label": item["label"], "color": item["color"]}
                         self._polyonList.append(nitem)
             else:
                 return QtWidgets.QMessageBox.critical(
