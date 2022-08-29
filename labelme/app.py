@@ -1522,6 +1522,7 @@ class MainWindow(QtWidgets.QMainWindow):
         s = []
         for shape in shapes:
             label = shape["label"]
+            #line_color = shape["line_color"]
             points = shape["points"]
             shape_type = shape["shape_type"]
             flags = shape["flags"]
@@ -1534,6 +1535,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             shape = Shape(
                 label=label,
+                #line_color=line_color,
                 shape_type=shape_type,
                 group_id=group_id,
             )
@@ -1615,9 +1617,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         def format_shape(s):
             data = s.other_data.copy()
+            print(s.id)
+            print(s.line_color)
+            print(s.color)
             data.update(
                 dict(
                     label=s.label.encode("utf-8") if PY2 else s.label,
+                    line_color="",
                     points=[(p.x(), p.y()) for p in s.points],
                     group_id=s.group_id,
                     shape_type=s.shape_type,

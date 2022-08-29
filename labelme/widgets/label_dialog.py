@@ -571,4 +571,4 @@ class LabelSearchDialog(QtWidgets.QDialog):
         if self.labelList.findItems(shape):
             return
 
-        self.labelList.addItem(item)
+        self.labelList.addItem(shape)
