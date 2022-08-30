@@ -2274,6 +2274,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             #put to coco format
             # labelme_json = glob.glob(os.path.join(filename, "*.json"))
+            cf = ""
             try:
                 cocofiles = []
                 cocofiles.append(filename)
@@ -2282,7 +2283,15 @@ class MainWindow(QtWidgets.QMainWindow):
                 dirname = os.path.dirname(filename)
                 cf = "{}/{}_coco.{}".format(dirname, coco_fname, "json")
                 labelme2coco(cocofiles, cf)
-            except:
+            except LabelFileError as e:
+                self.errorMessage(
+                    self.tr("Error creating coco file"),
+                    self.tr(
+                        "<p><b>%s</b></p>"
+                        "<p>Make sure <i>%s</i> is a valid label file."
+                    )
+                    % (e, cf),
+                )
                 pass
 
     def closeFile(self, _value=False):
