@@ -18,7 +18,7 @@ class PwdDLG(QtWidgets.QDialog):
         self._config = config
         self._app = parent
         self._sms = False
-        self._font = QtGui.QFont("맑은 고딕", 11, QtGui.QFont.Normal)
+        self._font = QtGui.QFont("맑은 고딕", 10, QtGui.QFont.Normal)
         if self._font:
             self.setFont(self._font)
         self.initUI()

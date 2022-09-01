@@ -10,7 +10,7 @@ class CQLabel(QLabel):
         self.setContentsMargins(3, 3, 3, 3)
         self._parent = parent
 
-        self._font = QtGui.QFont("맑은 고딕", 11, QtGui.QFont.Normal)
+        self._font = QtGui.QFont("맑은 고딕", 10, QtGui.QFont.Normal)
         if self._font:
             self.setFont(self._font)
         # self.show()

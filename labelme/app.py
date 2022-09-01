@@ -112,7 +112,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.setWindowTitle(__appname__)
 
-        self._font = QtGui.QFont("맑은 고딕", 11, QtGui.QFont.Normal)
+        self._font = QtGui.QFont("맑은 고딕", 10, QtGui.QFont.Normal)
         if self._font:
             self.setFont(self._font)
 
@@ -202,7 +202,7 @@ class MainWindow(QtWidgets.QMainWindow):
         fileListLayout.setSpacing(0)
         fileListLayout.addWidget(self.fileSearch)
         fileListLayout.addWidget(self.fileListWidget)
-        self.file_dock = QtWidgets.QDockWidget(self.tr("File List (Total {})".format(0)), self)
+        self.file_dock = QtWidgets.QDockWidget(self.tr("File List"), self)
         self.file_dock.setObjectName("Files")
         fileListWidget = QtWidgets.QWidget()
         fileListWidget.setLayout(fileListLayout)
@@ -1270,8 +1270,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._update_shape_color(shape)
         # update polygon count ckd
-        self.shape_dock.titleBarWidget().titleLabel.setText(
-            self.tr("Polygon Labels (Total %s)" % self.labelList.getCountItems()))
+        prodT = "Polygon Labels (Total %s)"
+        if self._config["local_lang"] == "ko_KR":
+            prodT = "다각형 레이블 (총 %s)"
+        self.shape_dock.titleBarWidget().titleLabel.setText(prodT % self.labelList.getCountItems())
 
     def _update_shape_color(self, shape):
         sc = shape.color if shape.color else "cyan"
@@ -1322,8 +1324,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 cnt = cnt + 1
 
         self.labelList.clearSelection()
-        #label_len = len(self.labelList._itemList)
-        #self.shape_dock.titleBarWidget().titleLabel.setText(self.tr("Polygon Labels (Total %s)" % label_len))
 
         self._noSelectionSlot = False
         self.canvas.loadShapes(shapes, replace=replace)
@@ -1385,13 +1385,20 @@ class MainWindow(QtWidgets.QMainWindow):
             # item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
             # item.setCheckState(Qt.Checked if flag else Qt.Unchecked)
             self.products_widget.addItem(item)
-        self.products_title_bar.titleLabel.setText(self.tr("Products (Total %s)" % self.products_widget.__len__()))
+        lang = self._config["local_lang"]
+        if lang == "ko_KR":
+            self.products_title_bar.titleLabel.setText("대표 품목 (총 %s)" % self.products_widget.__len__())
+        else:
+            self.products_title_bar.titleLabel.setText("Products (Total %s)" % self.products_widget.__len__())
 
 
     def addProduct(self, new_str):
         item = QtWidgets.QListWidgetItem(new_str)
         self.products_widget.insertItem(0, item)
-        self.products_title_bar.titleLabel.setText(self.tr("Products (Total %s)" % self.products_widget.__len__()))
+        if lang == "ko_KR":
+            self.products_title_bar.titleLabel.setText("대표 품목 (총 %s)" % self.products_widget.__len__())
+        else:
+            self.products_title_bar.titleLabel.setText("Products (Total %s)" % self.products_widget.__len__())
 
 
     def saveLabels(self, filename):

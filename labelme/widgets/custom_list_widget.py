@@ -125,7 +125,10 @@ class CustomListWidget(QtWidgets.QWidget):
                     self.HB_layout.addWidget(qq)
 
             if self._app.grade_title_bar:
-                self._app.grade_title_bar.titleLabel.setText(self.tr("Grades (Total %s)" % len(self.items_list)))
+                if self._app._config["local_lang"] == "ko_KR":
+                    self._app.grade_title_bar.titleLabel.setText("등급 (총 %s)" % len(self.items_list))
+                else:
+                    self._app.grade_title_bar.titleLabel.setText("Grades (Total %s)" % len(self.items_list))
             self._status = True
 
     def addNewGrade(self, new_str):
@@ -199,7 +202,7 @@ class RowWidgetItem(QtWidgets.QWidget):
         label.setText("#{}  {}".format(self._shape.id, self._shape.label))
         #label.setStyleSheet("QWidget { font-size: 18px; }")
         #label.setMaximumWidth(230)
-        self._font = QtGui.QFont("맑은 고딕", 11, QtGui.QFont.Normal)
+        self._font = QtGui.QFont("맑은 고딕", 10, QtGui.QFont.Normal)
         if self._font:
             label.setFont(self._font)
 
@@ -365,9 +368,11 @@ class CustomLabelListWidget(QtWidgets.QWidget):
             rowItem = RowWidgetItem(shape, self)
             self.vContent_layout.addWidget(rowItem)
             self._itemList.append(rowItem)
-
+        polyT = "Polygon Labels (Total %s)"
+        if self._app._config["local_lang"] == "ko_KR":
+            polyT = "다각형 레이블 (총 %s)"
         if self._app.shape_dock:
-            self._app.shape_dock.titleBarWidget().titleLabel.setText(self.tr("Polygon Labels (Total %s)" % len(self._itemList)))
+            self._app.shape_dock.titleBarWidget().titleLabel.setText(polyT % len(self._itemList))
 
 
     def addItem(self, shape):
@@ -394,10 +399,11 @@ class CustomLabelListWidget(QtWidgets.QWidget):
             self.vContent_layout.addWidget(rowItem)
 
         self._selected_item.clear()
-
+        polyT = "Polygon Labels (Total %s)"
+        if self._app._config["local_lang"] == "ko_KR":
+            polyT = "다격형 레이블 (총 %s)"
         if self._app.shape_dock:
-            self._app.shape_dock.titleBarWidget().titleLabel.setText(
-                self.tr("Polygon Labels (Total %s)" % len(self._itemList)))
+            self._app.shape_dock.titleBarWidget().titleLabel.setText(polyT % len(self._itemList))
 
     def getItems(self):
         if len(self._itemList) > 0:
@@ -537,9 +543,6 @@ class topToolWidget(QtWidgets.QWidget):
         hbox_layout.setSpacing(0)
         hbox_layout.setContentsMargins(5, 5, 0, 0)
 
-        #self.polygon = Qlabel(self.tr("polygon"))
-        #hbox_layout.addWidget(self.polygon, 0, QtCore.Qt.AlignLeft)
-
         self.polygon = QToolButton()
         self.polygon.setIcon(utils.newIcon("poly"))
         self.polygon.setIconSize(QtCore.QSize(20, 20))
@@ -624,6 +627,8 @@ class topToolWidget(QtWidgets.QWidget):
 
     def arrowClick(self):
         self._app.toggleDrawMode(True)
+        #self._app.canvas.setEnabled(False)
+        self._app.canvas.overrideCursor(self._app.canvas.CURSOR_DEFAULT)
 
     def editmodeClick(self):
         self.polygon.setEnabled(True)
