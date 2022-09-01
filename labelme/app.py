@@ -1234,6 +1234,7 @@ class MainWindow(QtWidgets.QMainWindow):
             load=False,
         )
 
+    # no using
     def productsSelectionChanged(self):
         items = self.products_widget.selectedItems()
         if not items:
@@ -1324,7 +1325,8 @@ class MainWindow(QtWidgets.QMainWindow):
             if item:
                 self.labelList.removeItem(item)
 
-        self.labelList.list_label_repaint()
+
+        self.labelList.list_label_resort()
 
     def loadShapes(self, shapes, replace=True):
         self._noSelectionSlot = True
@@ -1499,12 +1501,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self._copied_shapes = [s.copy() for s in self.canvas.selectedShapes]
         self.actions.paste.setEnabled(len(self._copied_shapes) > 0)
 
-    def labelSelectionChanged(self, selecteds, deselecteds):
+    def labelSelectionChanged(self, items):
         if self._noSelectionSlot:
             return
         if self.canvas.editing():
             selected_shapes = []
-            for item in self.labelList.selectedItems():
+            #for item in self.labelList.selectedItems():
+            for item in items:
                 selected_shapes.append(item._shape)
             if selected_shapes:
                 self.canvas.selectShapes(selected_shapes)
@@ -2180,7 +2183,7 @@ class MainWindow(QtWidgets.QMainWindow):
             "proceed anyway?"
         ).format(len(self.canvas.selectedShapes))
         if yes == QtWidgets.QMessageBox.warning(
-            self, self.tr("Attention"), msg, yes | no, yes
+                self, self.tr("Attention"), msg, yes | no, yes
         ):
             self.remLabels(self.canvas.deleteSelected())
             self.setDirty()
