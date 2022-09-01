@@ -12,9 +12,6 @@ from labelme.config import get_config
 from labelme.logger import logger
 from labelme.utils import newIcon
 
-from labelme.widgets.processini import AppInfoFile
-from labelme.widgets.processini import ProcessINI
-from labelme.widgets.loginDlg import LoginDLG
 from labelme.utils import newLang
 
 
@@ -173,84 +170,42 @@ def main():
         else:
             output_dir = output
 
-    local_lang = config["local_lang"] if config["local_lang"] is not None else QtCore.QLocale.system().name()
-    # start get lang of UI
-    """
-    labele_ini = os.getcwd() + '/labelme.ini'
-    iniCls = ProcessINI(labele_ini, "sec_lang", "local_lang")
-    if iniCls.hasINIFile() is True:
-        iniCls.loadSectionKeys()
-        LogPrint(str("exist labelme ini"))
-    else:
-        iniCls.createConfigFile()
-        LogPrint(str("labelme ini created that is not exist"))
+    # local_lang = config["local_lang"] if config["local_lang"] is not None else QtCore.QLocale.system().name()
 
-    lang = iniCls.getValue()
-    if lang and lang != 'null':
-        local_lang = str(lang).replace('.qm', '')
-    """
-    # end get lang of UI
+    config["login_state"] = True
+    config["grade_yn"] = "Y"
+    config["product_yn"] = "Y"
+    config["label_yn"] = "Y"
+    config["user_id"] = "grade_yn"
 
-    config["local_lang"] = local_lang
-    log_translator = QtCore.QTranslator()
-    local_lang = newLang(local_lang)
-    log_translator.load(local_lang)
 
-    login_app = QtWidgets.QApplication([])
-    login_app.setApplicationName(__appname__)
-    login_app.setWindowIcon(newIcon("icon"))
-    login_app.installTranslator(log_translator)
+    mlang = config["local_lang"]
+    mlang = str(mlang).replace('.qm', '')
 
-    config["login_state"] = False
-    config["grade_yn"] = "N"
-    config["product_yn"] = "N"
-    config["label_yn"] = "N"
-    config["user_id"] = ""
+    mlang = newLang(mlang)
+    translator = QtCore.QTranslator()
+    translator.load(mlang)
 
-    login_win = LoginDLG(
-        config=config
+    app = QtWidgets.QApplication(sys.argv)
+    app.setApplicationName(__appname__)
+    app.setWindowIcon(newIcon("icon"))
+    app.installTranslator(translator)
+
+    win = MainWindow(
+        config=config,
+        filename=filename,
+        output_file=output_file,
+        output_dir=output_dir,
     )
-    login_win.show()
-    ret = login_app.exec_()
-    if login_app:
-        login_app.removeTranslator(log_translator)
-        login_app = None
 
-    if ret == 0 and config["login_state"] is True:
-        mlang = config["local_lang"]
-        mlang = str(mlang).replace('.qm', '')
-
-        # save new lang to labelme.spec //
-        appinfo_file = AppInfoFile(default_config_file, "local_lang", mlang)
-        appinfo_file.saveValue()
-        # // end save
-
-        mlang = newLang(mlang)
-        translator = QtCore.QTranslator()
-        translator.load(mlang)
-
-        app = QtWidgets.QApplication(sys.argv)
-        app.setApplicationName(__appname__)
-        app.setWindowIcon(newIcon("icon"))
-        app.installTranslator(translator)
-
-        win = MainWindow(
-            config=config,
-            filename=filename,
-            output_file=output_file,
-            output_dir=output_dir,
-        )
-
-        if reset_config:
-            logger.info("Resetting Qt config: %s" % win.settings.fileName())
-            win.settings.clear()
-            sys.exit(0)
-
-        win.show()
-        win.raise_()
-        sys.exit(app.exec_())
-    else:
+    if reset_config:
+        logger.info("Resetting Qt config: %s" % win.settings.fileName())
+        win.settings.clear()
         sys.exit(0)
+
+    win.show()
+    win.raise_()
+    sys.exit(app.exec_())
 
 # this main block is required to generate executable by pyinstaller
 

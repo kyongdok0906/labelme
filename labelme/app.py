@@ -47,6 +47,7 @@ from labelme.widgets import DockInPutTitleBar
 from labelme.widgets import DockCheckBoxTitleBar
 from labelme.widgets import CustomListWidget
 from labelme.widgets import CustomLabelListWidget
+from labelme.widgets import RowWidgetItem
 from labelme.widgets import topToolWidget
 from labelme.widgets.pwdDlg import PwdDLG
 from labelme.widgets import labelme2coco
@@ -1013,6 +1014,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def resetState(self):
         self.labelList.clear()  # this block now when polygon list is deleted
+
+        # update polygon count ckd
+        prodT = "Polygon Labels (Total %s)"
+        if self._config["local_lang"] == "ko_KR":
+            prodT = "다각형 레이블 (총 %s)"
+        self.shape_dock.titleBarWidget().titleLabel.setText(prodT % self.labelList.getCountItems())
+
         self.labelList.clearlistLayout()
         self.filename = None
         self.imagePath = None
@@ -1164,9 +1172,12 @@ class MainWindow(QtWidgets.QMainWindow):
         return False
 
     def editLabel(self, item=None):
-        return  # it have to brock
         if item and not isinstance(item, CustomLabelListWidget):
             raise TypeError("item must be CustomLabelListWidget type")
+
+        if len(self._polyonList) < 1:
+            return self.errorMessage(self.tr("Wrong Empty label"),
+                                     self.tr("please select one grade for label in Grade list"))
 
         if not self.canvas.editing():
             return
@@ -1174,29 +1185,32 @@ class MainWindow(QtWidgets.QMainWindow):
             item = self.currentItem()
         if item is None:
             return
+        if isinstance(item, RowWidgetItem) is not True:
+            return
         shape = item._shape
         if shape is None:
             return
-        text, flags, group_id = self.labelDialog.popUpLabelDlg(
-            text=shape.label,
-            flags=shape.flags,
-            group_id=shape.group_id,
-        )
-        if text is None:
+        items = copy.deepcopy(self._polyonList)
+        ritem = self.labelDialog.popUpLabelDlg(items, shape, "edit")
+        if ritem is None:
             return
-        if not self.validateLabel(text):
+        if not self.validateLabel(ritem["label"]):
             self.errorMessage(
                 self.tr("Invalid label"),
                 self.tr("Invalid label '{}' with validation type '{}'").format(
-                    text, self._config["validate_label"]
+                    ritem["label"], self._config["validate_label"]
                 ),
             )
             return
-        shape.label = text
-        shape.flags = flags
-        shape.group_id = group_id
-
+        shape.label = ritem["label"]
+        shape.label_display = ritem["label_display"]
+        shape.grade = ritem["grade"]
+        shape.color = ritem["color"]
         self._update_shape_color(shape)
+        item._shape = shape
+        item.changeTextAndBackground()
+
+        """
         if shape.group_id is None:
             item.setText(
                 '{} <font color="#{:02x}{:02x}{:02x}">●</font>'.format(
@@ -1205,12 +1219,14 @@ class MainWindow(QtWidgets.QMainWindow):
             )
         else:
             item.setText("{} ({})".format(shape.label, shape.group_id))
+        """
         self.setDirty()
+        """
         if not self.uniqLabelList.findItemsByLabel(shape.label):
             item = QtWidgets.QListWidgetItem()
             item.setData(Qt.UserRole, shape.label)
             self.uniqLabelList.addItem(item)
-
+        """
     def fileSearchChanged(self):
         self.importDirImages(
             self.lastOpenDir,
@@ -1331,12 +1347,20 @@ class MainWindow(QtWidgets.QMainWindow):
     def loadLabels(self, shapes):
         s = []
         for shape in shapes:
-            id = shape["id"]
+            try:
+                grade = shape["grade"]
+            except AttributeError:
+                grade = shape["label"]
+
+            try:
+                label_display = shape["label_display"]
+            except AttributeError:
+                label_display = shape["label"]
+
             label = shape["label"]
             color = shape["color"]
             points = shape["points"]
             shape_type = shape["shape_type"]
-            flags = shape["flags"]
             group_id = shape["group_id"]
             other_data = shape["other_data"]
 
@@ -1345,8 +1369,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 continue
 
             shape = Shape(
-                id=id,
+                grade=grade,
                 label=label,
+                label_display=label_display,
                 color=color,
                 shape_type=shape_type,
                 group_id=group_id,
@@ -1354,7 +1379,7 @@ class MainWindow(QtWidgets.QMainWindow):
             for x, y in points:
                 shape.addPoint(QtCore.QPointF(x, y))
             shape.close()
-
+            """
             default_flags = {}
             if self._config["label_flags"]:
                 for pattern, keys in self._config["label_flags"].items():
@@ -1363,8 +1388,8 @@ class MainWindow(QtWidgets.QMainWindow):
                             default_flags[key] = False
             shape.flags = default_flags
             shape.flags.update(flags)
+            """
             shape.other_data = other_data
-
             s.append(shape)
         self.loadShapes(s)
 
@@ -1409,16 +1434,18 @@ class MainWindow(QtWidgets.QMainWindow):
             #self._update_shape_color(s)
             #line_rgba = s.line_color.rgba()
             #fill_rgba = s.fill_color.rgba()
+            grade = s.grade.encode("utf-8") if PY2 else s.grade
+            label_display = s.label_display.encode("utf-8") if PY2 else s.label_display
             label = s.label.encode("utf-8") if PY2 else s.label
             data.update(
                 dict(
-                    id="{}".format(s.id),
-                    label="{}".format(label),
+                    grade=grade,
+                    label=label,
+                    label_display=label_display,
                     color=s.color if s.color else "cyan",
                     points=[(p.x(), p.y()) for p in s.points],
-                    group_id=s.group_id,
                     shape_type=s.shape_type,
-                    flags=s.flags,
+                    group_id=s.group_id
                 )
             )
             return data
@@ -1438,7 +1465,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 imageHeight=self.image.height(),
                 imageWidth=self.image.width(),
                 otherData=self.otherData,
-                flags=flags,
             )
             self.labelFile = lf
             items = self.fileListWidget.findItems(
@@ -1503,7 +1529,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.canvas.repaint()
             return self.errorMessage(self.tr("Wrong Empty label"), self.tr("please select one grade for label in Grade list"))
 
-        flags = {}
         group_id = None
         item = None
         if self._config["display_label_popup"]:
@@ -1522,13 +1547,15 @@ class MainWindow(QtWidgets.QMainWindow):
             item = None
         if item:
             self.labelList.clearSelection()
+            """
             cnt = self.labelList.getCountItems()
             tcnt = cnt + 1
             if tcnt < 10000:
                 item["id"] = "%04d" % tcnt
             else:
                 item["id"] = "%08d" % tcnt
-            shape = self.canvas.setLastLabel(item, flags)
+             """
+            shape = self.canvas.setLastLabel(item)
             shape.group_id = group_id
             self.addLabel(shape)
             self.actions.editMode.setEnabled(True)
@@ -1712,7 +1739,6 @@ class MainWindow(QtWidgets.QMainWindow):
             prev_shapes = self.canvas.shapes
         self.canvas.loadPixmap(QtGui.QPixmap.fromImage(image))
 
-        flags = {k: False for k in self._config["flags"] or []}
         if self.labelFile:
             self.loadLabels(self.labelFile.shapes)
         # part grades of here ckd
@@ -2020,7 +2046,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if filename and self.saveLabels(filename):
             self.addRecentFile(filename)
             self.setClean()
-
+            # run coco format
             threading.Timer(0.1, self.putDownCocoFormat, [filename]).start()
 
     def putDownCocoFormat(self, arg):
@@ -2337,9 +2363,15 @@ class MainWindow(QtWidgets.QMainWindow):
                 items = jsstr['items']
                 # print("labels is ", items)
                 if len(items):
-                    #self.labelList.addItems(items)
                     self._polyonList.clear()
-                    for i in range(len(items)):
+                    """
+                    {
+                        "label_display": "경량A-C형강",
+                        "label": "C형강",
+                        "grade": "경량A",
+                        "color": "Maroon"
+                    }
+                     for i in range(len(items)):
                         tcnt = i + 1
                         if tcnt < 10000:
                             idx = "%04d" % tcnt
@@ -2347,7 +2379,8 @@ class MainWindow(QtWidgets.QMainWindow):
                             idx = "%08d" % tcnt
                         item = items[i]
                         nitem = {"id": "{}".format(idx), "label": item["label"], "color": item["color"]}
-                        self._polyonList.append(nitem)
+                    """
+                    self._polyonList = items
             else:
                 return QtWidgets.QMessageBox.critical(
                     self, "Error", "<p><b>%s</b></p>%s" % ("Error", jsstr['message'])

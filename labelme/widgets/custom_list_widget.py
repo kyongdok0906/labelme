@@ -186,8 +186,9 @@ class RowWidgetItem(QtWidgets.QWidget):
         else:
             #sp = {"id": shape["id"], "label": shape["label"], "color": shape["color"]}
             sp = Shape()
-            sp.id = shape["id"]
+            sp.label_display = shape["label_display"]
             sp.label = shape["label"]
+            sp.grade = shape["grade"]
             sp.color = shape["color"]
             self._shape = sp
         #self._shape = shape
@@ -198,23 +199,30 @@ class RowWidgetItem(QtWidgets.QWidget):
         horizontal_layout.setSpacing(1)
         horizontal_layout.setContentsMargins(0, 0, 0, 0)
 
-        label = QtWidgets.QLabel(self)
-        label.setText("#{}  {}".format(self._shape.id, self._shape.label))
+        self.label = QtWidgets.QLabel(self)
+        idx = len(self._parent._itemList)
+        if idx < 10000:
+            idx = "%04d" % idx
+        else:
+            idx = "%08d" % idx
+
+        self._id = idx
+        self.label.setText("#{}  {}".format(self._id, self._shape.label_display))
         #label.setStyleSheet("QWidget { font-size: 18px; }")
         #label.setMaximumWidth(230)
         self._font = QtGui.QFont("맑은 고딕", 10, QtGui.QFont.Normal)
         if self._font:
-            label.setFont(self._font)
+            self.label.setFont(self._font)
 
-        color_label = QtWidgets.QLabel(self)
+        self.color_label = QtWidgets.QLabel(self)
         color_txt = self._shape.color
 
         if not color_txt or "" == color_txt:
             color_txt = "cyan"
 
-        color_label.setText("")
-        color_label.setStyleSheet("QLabel{border: 1px soild #aaa; border-radius: 7px; background: %s;}" % color_txt)
-        color_label.setFixedWidth(8)
+        self.color_label.setText("")
+        self.color_label.setStyleSheet("QLabel{border: 1px soild #aaa; border-radius: 7px; background: %s;}" % color_txt)
+        self.color_label.setFixedWidth(8)
 
         self.check_box = QtWidgets.QCheckBox(self)
 
@@ -222,9 +230,9 @@ class RowWidgetItem(QtWidgets.QWidget):
         self.check_box.setCheckState(Qt.Checked)  # Qt.Checked
 
         horizontal_layout.addSpacing(6)
-        horizontal_layout.addWidget(label, 0, QtCore.Qt.AlignLeft)
+        horizontal_layout.addWidget(self.label, 0, QtCore.Qt.AlignLeft)
         horizontal_layout.addSpacing(6)
-        horizontal_layout.addWidget(color_label, 0, QtCore.Qt.AlignLeft)
+        horizontal_layout.addWidget(self.color_label, 0, QtCore.Qt.AlignLeft)
         horizontal_layout.addStretch()
         horizontal_layout.addSpacing(6)
         horizontal_layout.addWidget(self.check_box, 0, QtCore.Qt.AlignRight)
@@ -248,7 +256,19 @@ class RowWidgetItem(QtWidgets.QWidget):
         else:
             #self._shape.selected = False
             self.setStyleSheet("QWidget { background-color: rgb(255, 255, 255); border: 0;}")
-        # self.setAutoFillBackground(True)
+        self.setAutoFillBackground(True)
+
+    def changeTextAndBackground(self):
+        self.label.setText("#{}  {}".format(self._id, self._shape.label_display))
+        self.label.repaint()
+        color_txt = self._shape.color
+        if not color_txt or "" == color_txt:
+            color_txt = "cyan"
+        self.color_label.setStyleSheet(
+            "QLabel{border: 1px soild #aaa; border-radius: 7px; background: %s;}" % color_txt)
+        self.changeBackground(True)
+        self.repaint()
+        #self.color_label.repaint()
 
     def checkitem(self, flag):
         if flag is True:
@@ -490,7 +510,7 @@ class CustomLabelListWidget(QtWidgets.QWidget):
                 item.changeBackground(True)
                 T, x = self.findSelectedItem(item)
                 if T is False:
-                    self._selected_item.append(item)
+                    self._selected_item.insert(0, item)
                 break
 
     def findSelectedItem(self, pitem):
