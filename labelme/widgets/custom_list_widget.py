@@ -628,7 +628,7 @@ class topToolWidget(QtWidgets.QWidget):
     def arrowClick(self):
         self._app.toggleDrawMode(True)
         #self._app.canvas.setEnabled(False)
-        self._app.canvas.overrideCursor(self._app.canvas.CURSOR_DEFAULT)
+        self._app.canvas.overrideCursor(QtCore.Qt.ArrowCursor)
 
     def editmodeClick(self):
         self.polygon.setEnabled(True)
