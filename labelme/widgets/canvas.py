@@ -890,5 +890,4 @@ class Canvas(QtWidgets.QWidget):
         self.restoreCursor()
         self.pixmap = None
         self.shapesBackups = []
-        # self.selectedShapes = []  # add ckd
         self.update()

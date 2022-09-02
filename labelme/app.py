@@ -1013,21 +1013,34 @@ class MainWindow(QtWidgets.QMainWindow):
         self.statusBar().showMessage(message, delay)
 
     def resetState(self):
+        self.labelList.clearlistLayout()
         self.labelList.clear()  # this block now when polygon list is deleted
-
         # update polygon count ckd
         prodT = "Polygon Labels (Total %s)"
         if self._config["local_lang"] == "ko_KR":
             prodT = "다각형 레이블 (총 %s)"
         self.shape_dock.titleBarWidget().titleLabel.setText(prodT % self.labelList.getCountItems())
 
-        self.labelList.clearlistLayout()
         self.filename = None
         self.imagePath = None
         self.imageData = None
         self.labelFile = None
         self.otherData = None
         self.canvas.resetState()
+
+    # delete simply
+    def resetSimplyState(self):
+        self.labelList.clearlistLayout()
+        self.labelList.clear()  # this block now when polygon list is deleted
+        # update polygon count ckd
+        prodT = "Polygon Labels (Total %s)"
+        if self._config["local_lang"] == "ko_KR":
+            prodT = "다각형 레이블 (총 %s)"
+        self.shape_dock.titleBarWidget().titleLabel.setText(prodT % self.labelList.getCountItems())
+        self.labelFile = None
+        self.otherData = None
+        self.canvas.shapes = []
+        self.canvas.update()
 
     def currentItem(self):
         items = self.labelList.selectedItems()
@@ -2063,8 +2076,8 @@ class MainWindow(QtWidgets.QMainWindow):
             basename = os.path.basename(arg)
             coco_fname = os.path.splitext(basename)[0]
             dirname = os.path.dirname(arg)
-            cf = "{}/{}_coco.{}".format(dirname, coco_fname, "json")
-            labelme2coco(cocofiles, cf)
+            cocofp = "{}/{}_coco.{}".format(dirname, coco_fname, "json")
+            labelme2coco(cocofiles, cocofp)
         except LabelFileError as e:
             self.errorMessage(
                 self.tr("Error creating coco file"),
@@ -2109,13 +2122,20 @@ class MainWindow(QtWidgets.QMainWindow):
         if osp.exists(label_file):
             os.remove(label_file)
             logger.info("Label file is removed: {}".format(label_file))
+        # delete coco file > add ckd
+            basename = os.path.basename(label_file)
+            coco_fname = os.path.splitext(basename)[0]
+            dirname = os.path.dirname(label_file)
+            cocofp = "{}/{}_coco.{}".format(dirname, coco_fname, "json")
+            if osp.exists(cocofp):
+                os.remove(cocofp)
 
             item = self.fileListWidget.currentItem()
             item.setCheckState(Qt.Unchecked)
+            # self.resetState()
+            self.resetSimplyState()  # add ckd
 
-            self.resetState()
-
-    # Message Dialogs. #
+    # Message Dialogs.
     def hasLabels(self):
         if self.noShapes():
             self.errorMessage(
@@ -2331,7 +2351,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def sendProductToServer(self, pstr, callback):
         url = 'https://gb9fb258fe17506-apexdb.adb.ap-seoul-1.oraclecloudapps.com/ords/lm/v1/labelme/codes/products'
         headers = {'Authorization': 'Bearer 98EDFBC2D4A74E9AB806D4718EC503EE6DEDAAAD'}
-        data = {'user_id': self._config['user_id'], 'product': pstr}
+        data = {'user_id': self._config['user_id'], 'grade': self.selected_grade, 'product': pstr}
         jsstr = httpReq(url, "post", headers, data)
         if jsstr['message'] == 'success':
             callback(pstr)  # called addItemsToQHBox

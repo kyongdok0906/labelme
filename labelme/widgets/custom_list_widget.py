@@ -76,7 +76,7 @@ class CustomListWidget(QtWidgets.QWidget):
                     txt = lbObj.text()
                     objname = lbObj.objectName()  # will do using after this val
                     if txt != self._selected_item:
-                        lbObj.setStyleSheet("QWidget { background-color: rgb(255, 255, 255); border: 0;}")
+                        lbObj.setStyleSheet("QLabel { border: 0px solid #aaa; padding:2px}")
 
     def addItemsToQHBox(self, items):
         if len(items) > 0:
@@ -89,19 +89,20 @@ class CustomListWidget(QtWidgets.QWidget):
             icount = 0
             for j in range(0, item_count):
                 vbox = QVBoxLayout()
-                vbox.setContentsMargins(1, 0, 2, 0)
-                vbox.setSpacing(2)
+                vbox.setContentsMargins(0, 0, 1, 0)
+                vbox.setSpacing(1)
                 #vbox.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignCenter)
                 for i in range(4):
                     if icount < item_count:
                         item = items[icount]
                         if item is not None:
                             qlb = CQLabel(item["grade"], self)
-                            qlb.sizeHint()
-                            qlb.setObjectName(item["grade"])
-                            qlb.setStyleSheet("QWidget { border: 0px solid #aaa;}")
+                            # qlb.sizeHint()
+                            # qlb.setObjectName(item["grade"])
+                            qlb.setStyleSheet("QLabel { border: 0px solid #aaa; padding:2px}")
                             qlb.setMaximumWidth(100)
-                            qlb.setFixedHeight(20)
+                            qlb.setMaximumHeight(28)
+                            qlb.setFont(self._app._font)
                             vbox.addWidget(qlb)
                             self.items_list.append(qlb)
                             icount = icount + 1
