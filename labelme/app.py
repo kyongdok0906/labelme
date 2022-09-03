@@ -2385,10 +2385,13 @@ class MainWindow(QtWidgets.QMainWindow):
             jsstr = httpReq(url, "get", headers)
             if jsstr['message'] == 'success':
                 items = jsstr['items']
-                # print("labels is ", items)
-                if len(items):
-                    self._polyonList.clear()
-                    self._polyonList = items
+                try:
+                    if items and len(items) > 0:
+                        if self._polyonList is not None:
+                            self._polyonList.clear()
+                            self._polyonList = items
+                except AttributeError:
+                    pass
             else:
                 return QtWidgets.QMessageBox.critical(
                     self, "Error", "<p><b>%s</b></p>%s" % ("Error", jsstr['message'])
