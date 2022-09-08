@@ -212,9 +212,13 @@ class MyCustomWidget(QtWidgets.QWidget):
         self.label = QtWidgets.QLabel("#{}  {}".format(self._id, self._shape.label_display))
         self.label.setFont(appFont())
 
-        color_txt = self._shape.color
-        if not color_txt or "" == color_txt:
-            color_txt = "cyan"
+        c_txt = self._shape.color
+        if not c_txt or "" == c_txt:
+            c_txt = "#808000"
+        Qc = QtGui.QColor(c_txt)
+        r, g, b, a = Qc.red(), Qc.green(), Qc.blue(), Qc.alpha()
+        tmpcolor = QtGui.QColor(r, g, b)
+        color_txt = tmpcolor.name(QtGui.QColor.HexRgb)
 
         self.clrlabel = QtWidgets.QLabel()
         self.clrlabel.setStyleSheet(
@@ -423,6 +427,12 @@ class topToolWidget(QtWidgets.QWidget):
         self.arrow.clicked.connect(self.arrowClick)
         self.arrow.setEnabled(False)
 
+        self.trans = QToolButton()
+        self.trans.setIcon(utils.newIcon("ftrans"))
+        self.trans.setIconSize(QtCore.QSize(20, 20))
+        self.trans.clicked.connect(self.transClick)
+        self.trans.setEnabled(False)
+
         hbox_layout.addSpacing(20)
         hbox_layout.addWidget(self.polygon, 0, QtCore.Qt.AlignLeft)
         hbox_layout.addSpacing(20)
@@ -433,6 +443,8 @@ class topToolWidget(QtWidgets.QWidget):
         hbox_layout.addWidget(self.line, 0, QtCore.Qt.AlignLeft)
         hbox_layout.addSpacing(20)
         hbox_layout.addWidget(self.arrow, 0, QtCore.Qt.AlignLeft)
+        hbox_layout.addSpacing(20)
+        hbox_layout.addWidget(self.trans, 0, QtCore.Qt.AlignLeft)
 
         hbox_layout.addStretch()
 
@@ -479,12 +491,18 @@ class topToolWidget(QtWidgets.QWidget):
         #self._app.canvas.setEnabled(False)
         self._app.canvas.overrideCursor(QtCore.Qt.ArrowCursor)
 
-    def editmodeClick(self):
-        self.polygon.setEnabled(True)
-        self.rect.setEnabled(True)
-        self.circle.setEnabled(True)
-        self.line.setEnabled(True)
-        self.arrow.setEnabled(True)
+    def transClick(self):
+        self.trans.setEnabled(False)
+        self._app.PolygonAlpha(self.trans)
+
+    def editmodeClick(self, value):
+        self.polygon.setEnabled(value)
+        self.rect.setEnabled(value)
+        self.circle.setEnabled(value)
+        self.line.setEnabled(value)
+        self.arrow.setEnabled(value)
+        self.trans.setEnabled(value)
+
 
     def eventFromMenu(self, mode):
         if mode == "polygon":
