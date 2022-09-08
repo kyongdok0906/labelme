@@ -1809,7 +1809,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def togglePolygons(self, value):
         self.labelList.checkStatus(1 if value else 0)
 
-    def loadFile(self, filename=None):
+    def loadFile_new(self, filename=None):
         """Load the specified file, or the last opened file if None."""
         # changing fileListWidget loads file
         if filename in self.imageList and (
@@ -2010,7 +2010,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         return True
 
-    def loadFile_org(self, filename=None):
+    def loadFile(self, filename=None):
         """Load the specified file, or the last opened file if None."""
         # changing fileListWidget loads file
         if filename in self.imageList and (
